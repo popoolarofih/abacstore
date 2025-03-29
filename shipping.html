@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shipping Information - ABACSTORE</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <!-- Google Font: Tektur -->
+  <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bg-dark text-white py-3">
+    <div class="container">
+      <h1 style="font-family: 'Tektur', sans-serif;">Shipping Information</h1>
+    </div>
+  </header>
+  
+  <main class="py-5">
+    <div class="container">
+      <form id="shippingForm">
+        <div class="mb-3">
+          <label for="fullName" class="form-label">Full Name</label>
+          <input type="text" class="form-control" id="fullName" required>
+        </div>
+        <div class="mb-3">
+          <label for="address" class="form-label">Address</label>
+          <input type="text" class="form-control" id="address" required>
+        </div>
+        <div class="row">
+          <div class="mb-3 col-md-6">
+            <label for="city" class="form-label">City</label>
+            <input type="text" class="form-control" id="city" required>
+          </div>
+          <div class="mb-3 col-md-4">
+            <label for="state" class="form-label">State</label>
+            <input type="text" class="form-control" id="state" required>
+          </div>
+          <div class="mb-3 col-md-2">
+            <label for="zip" class="form-label">Zip</label>
+            <input type="text" class="form-control" id="zip" required>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="country" class="form-label">Country</label>
+          <input type="text" class="form-control" id="country" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Shipping Info</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD_OKecRD3bFiZBFikhNauAPZRdz-FKp9w",
+      authDomain: "ecommerce-fbaa8.firebaseapp.com",
+      projectId: "ecommerce-fbaa8",
+      storageBucket: "ecommerce-fbaa8.firebasestorage.app",
+      messagingSenderId: "296693502804",
+      appId: "1:296693502804:web:d90e69e72e8983b753aec1",
+      measurementId: "G-NJWZ20S9RM"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // For demo, we use a hard-coded user ID. In production, use Firebase Auth.
+    const userId = "user123";
+
+    // When shipping form is submitted, create/update order doc in "orders" collection.
+    document.getElementById("shippingForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const shippingData = {
+        fullName: document.getElementById("fullName").value,
+        address: document.getElementById("address").value,
+        city: document.getElementById("city").value,
+        state: document.getElementById("state").value,
+        zip: document.getElementById("zip").value,
+        country: document.getElementById("country").value,
+        shippingMethod: "Standard", // You could add options for shipping methods
+        createdAt: new Date(),
+        status: "shipping info"
+      };
+
+      // Create or update an order document for this user
+      // Here we use a fixed doc "current" for demo; in production, you might generate a new order ID.
+      const orderRef = doc(db, "orders", userId, "current", "orderInfo");
+      await setDoc(orderRef, shippingData, { merge: true });
+      // Store order ID in localStorage (for multi-page flow)
+      localStorage.setItem("currentOrderPath", `orders/${userId}/current/orderInfo`);
+      // Redirect to Payment page
+      window.location.href = "payment.html";
+    });
+  </script>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

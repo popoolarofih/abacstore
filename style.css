@@ -1,0 +1,68 @@
+/* Global font */
+body {
+    font-family: 'Tektur', sans-serif;
+  }
+  
+  /* Top Nav */
+  .bg-light.text-dark.text-center {
+    font-size: 0.9rem;
+  }
+  /* Card hover effect */
+.card-hover:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
+  }
+  /* Responsive adjustments for images */
+.card-img-top {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  /* Navbar brand override */
+  .navbar-brand {
+    letter-spacing: 1px;
+  }
+  
+  /* Hero Section */
+  .hero-wrapper {
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-img {
+    object-fit: cover;
+    max-height: 75vh;
+  }
+  .hero-content {
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+  }
+  
+  /* Card Hover Effect */
+  .card-hover:hover {
+    transform: translateY(-5px);
+    transition: 0.3s ease;
+  }
+  
+  /* Apparel / Essentials images */
+  img.rounded.shadow-sm {
+    max-height: 400px;
+    object-fit: cover;
+  }
+  
+  /* Media queries for smaller devices */
+  @media (max-width: 576px) {
+    .hero-content h1 {
+      font-size: 1.75rem;
+    }
+    .hero-content h3 {
+      font-size: 1.2rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .hero-content h1 {
+      font-size: 2rem;
+    }
+  }
+  

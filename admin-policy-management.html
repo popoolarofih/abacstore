@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ABACSTORE | Admin - Policy Management</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <!-- Google Font: Tektur -->
+  <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Tektur', sans-serif; background-color: #f8f9fa; }
+    .container { max-width: 1100px; margin: 30px auto; }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">ABACSTORE Admin</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="adminNavbar">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="admin-user-management.html">User Management</a></li>
+          <li class="nav-item"><a class="nav-link" href="admin-product-management.html">Product Management</a></li>
+          <li class="nav-item"><a class="nav-link" href="admin-order-management.html">Order Management</a></li>
+          <li class="nav-item"><a class="nav-link active" href="admin-policy-management.html">Policy Management</a></li>
+          <li class="nav-item"><a class="nav-link" href="admin-audit-logs.html">Audit Logs</a></li>
+          <li class="nav-item"><a class="nav-link" href="admin-reports-analytics.html">Reports & Analytics</a></li>
+          <li class="nav-item"><a class="nav-link" href="admin-system-settings.html">System Settings</a></li>
+          <li class="nav-item"><a class="nav-link" href="login.html"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Policy Management Content -->
+  <div class="container mt-5">
+    <h1>Policy Management</h1>
+    <p id="adminInfo"></p>
+    <div id="policyList">
+      <p>Loading policies...</p>
+    </div>
+    <!-- Form for adding/updating a policy -->
+    <h3 class="mt-4">Add New Policy</h3>
+    <form id="policyForm">
+      <div class="mb-3">
+        <label for="policyName" class="form-label">Policy Name</label>
+        <input type="text" id="policyName" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="policyDescription" class="form-label">Policy Description</label>
+        <textarea id="policyDescription" class="form-control" rows="3" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Save Policy</button>
+      <p id="policyResponse" class="mt-2"></p>
+    </form>
+  </div>
+
+  <!-- Supabase & JS Code -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const SUPABASE_URL = 'https://jgnabxpbmhjitfsyeqms.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function checkAdmin() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || user.user_metadata.role !== 'admin') {
+        window.location.href = 'login.html';
+        return;
+      }
+      document.getElementById('adminInfo').textContent = `Welcome, Admin ${user.email}`;
+      loadPolicies();
+    }
+
+    async function loadPolicies() {
+      // Assuming a "policies" table exists
+      const { data: policies, error } = await supabase
+        .from('policies')
+        .select('*');
+      if (error) {
+        document.getElementById('policyList').innerHTML = `<p class="text-danger">Error: ${error.message}</p>`;
+        return;
+      }
+      let html = `<table class="table">
+        <thead><tr><th>Name</th><th>Description</th><th>Actions</th></tr></thead><tbody>`;
+      policies.forEach(p => {
+        html += `<tr>
+          <td>${p.name}</td>
+          <td>${p.description}</td>
+          <td>
+            <button class="btn btn-sm btn-primary">Edit</button>
+            <button class="btn btn-sm btn-danger">Delete</button>
+          </td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      document.getElementById('policyList').innerHTML = html;
+    }
+
+    document.getElementById('policyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('policyName').value;
+      const description = document.getElementById('policyDescription').value;
+      const { error } = await supabase.from('policies').insert([{ name, description }]);
+      if (error) {
+        document.getElementById('policyResponse').textContent = error.message;
+      } else {
+        document.getElementById('policyResponse').textContent = 'Policy added successfully!';
+        loadPolicies();
+      }
+    });
+
+    checkAdmin();
+  </script>
+  
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

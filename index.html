@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ABACSTORE | Secure Solutions Redefined</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Inline Custom CSS -->
+  <style>
+    /* Base Styles */
+    body {
+      font-family: 'Tektur', sans-serif;
+      background-color: #f8f9fa;
+      overflow-x: hidden; /* Prevent horizontal scrolling */
+    }
+    /* Announcement Bar */
+    .announcement {
+      background: #333;
+      color: #fff;
+      font-size: 0.9rem;
+      padding: 0.5rem 0;
+      text-align: center;
+    }
+    /* Navbar tweaks */
+    .navbar-brand {
+      font-size: 1.8rem;
+    }
+    /* Hero Section */
+    .hero-section {
+      position: relative;
+      height: 90vh;
+      background: url('./Images/christopher-gower-_aXa21cf7rY-unsplash.jpg') center/cover no-repeat;
+    }
+    .hero-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.5);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      top: 50%;
+      transform: translateY(-50%);
+      text-align: center;
+      color: #fff;
+      padding: 0 1rem;
+    }
+    .hero-content h1 {
+      font-size: 3rem;
+      letter-spacing: 1px;
+    }
+    .hero-content p {
+      font-size: 1.25rem;
+    }
+    /* Section Titles */
+    .section-title {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .section-subtitle {
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    /* Card Hover Effects */
+    .card-hover:hover {
+      transform: translateY(-5px);
+      transition: all 0.3s ease;
+    }
+    /* Media Queries for Extra Responsiveness */
+    @media (max-width: 768px) {
+      .hero-section {
+        height: 70vh;
+      }
+      .hero-content h1 {
+        font-size: 2rem;
+      }
+      .hero-content p {
+        font-size: 1rem;
+      }
+      .section-title {
+        font-size: 2rem;
+      }
+      html {
+        font-size: 14px; /* Slightly smaller base font for mobile */
+      }
+      .container {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+      .hero-content h1 {
+        font-size: 2.2rem;
+      }
+      .hero-content p {
+        font-size: 1rem;
+      }
+      .section-title {
+        font-size: 1.8rem;
+      }
+    }
+    @media (max-width: 576px) {
+      .navbar-brand {
+        font-size: 1.5rem;
+      }
+      .hero-content h1 {
+        font-size: 1.75rem;
+      }
+      .hero-content p {
+        font-size: 0.9rem;
+      }
+      .section-title {
+        font-size: 1.75rem;
+      }
+      .section-subtitle {
+        font-size: 0.85rem;
+      }
+      /* Increase tap target sizes */
+      .nav-link, .btn {
+        padding: 0.75rem 1rem;
+      }
+      /* Stack layouts */
+      .row > [class*='col-'] {
+        margin-bottom: 1rem;
+      }
+      /* Adjust card sizes */
+      .card {
+        margin-bottom: 1rem;
+      }
+    }
+    /* Fluid Image Sizing */
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+    /* Responsive Flexbox for Footer */
+    footer .row {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    footer .col-6 {
+      flex: 0 0 50%;
+      max-width: 50%;
+    }
+    @media (max-width: 768px) {
+      footer .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+    }
+    /* Responsive Video and Embed */
+    .embed-responsive {
+      position: relative;
+      overflow: hidden;
+    }
+    .embed-responsive::before {
+      content: "";
+      display: block;
+      padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    }
+    .embed-responsive-item {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    /* Horizontal Scroll Prevention */
+    * {
+      -webkit-overflow-scrolling: touch;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <!-- Announcement Bar -->
+  <div class="announcement">
+    Next-Gen Security Solutions for Dynamic Enterprises. <a href="#" class="fw-bold text-decoration-underline text-light">Learn more</a>
+  </div>
+
+  <!-- Main Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">ABACSTORE</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+              data-bs-target="#abacNavbar" aria-controls="abacNavbar" 
+              aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="abacNavbar">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="catalog.html">Products</a></li>
+          <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+          <li class="nav-item ms-3"><a class="nav-link" href="login.html"><i class="bi bi-person"></i></a></li>
+          <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-cart"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-content container">
+      <h3 class="fw-bold">Secure. Dynamic. Reliable.</h3>
+      <h1 class="display-3">Attribute-Based Access Control</h1>
+      <p class="lead">Empowering your enterprise with dynamic, attribute-driven security.</p>
+      <a href="catalog.html" class="btn btn-light btn-lg fw-bold mt-3">Explore Solutions</a>
+    </div>
+  </section>
+
+  <!-- Featured Collections -->
+  <section class="py-5" id="features">
+    <div class="container text-center">
+      <h2 class="section-title fw-bold">Cutting-Edge Security</h2>
+      <div class="row mt-5 g-4">
+        <div class="col-12 col-md-3">
+          <a href="#" class="text-decoration-none text-dark">
+            <div class="card border-0 shadow-sm card-hover py-4">
+              <div class="card-img-top mb-3">
+                <i class="bi bi-shield-lock" style="font-size: 4rem;"></i>
+              </div>
+              <div class="card-body">
+                <h6 class="fw-bold">Access Modules</h6>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="col-12 col-md-3">
+          <a href="#" class="text-decoration-none text-dark">
+            <div class="card border-0 shadow-sm card-hover py-4">
+              <div class="card-img-top mb-3">
+                <i class="bi bi-pencil-square" style="font-size: 4rem;"></i>
+              </div>
+              <div class="card-body">
+                <h6 class="fw-bold">Custom Policies</h6>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="col-12 col-md-3">
+          <a href="#" class="text-decoration-none text-dark">
+            <div class="card border-0 shadow-sm card-hover py-4">
+              <div class="card-img-top mb-3">
+                <i class="bi bi-speedometer2" style="font-size: 4rem;"></i>
+              </div>
+              <div class="card-body">
+                <h6 class="fw-bold">Real-time Monitoring</h6>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="col-12 col-md-3">
+          <a href="#" class="text-decoration-none text-dark">
+            <div class="card border-0 shadow-sm card-hover py-4">
+              <div class="card-img-top mb-3">
+                <i class="bi bi-plug" style="font-size: 4rem;"></i>
+              </div>
+              <div class="card-body">
+                <h6 class="fw-bold">Secure Integration</h6>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Solutions Highlight -->
+  <section class="py-5 bg-light">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-12 col-md-6">
+          <img src="./Images/sarah-dorweiler-fr0J5-GIVyg-unsplash.jpg" class="img-fluid rounded shadow-sm" alt="Secure Solutions" />
+        </div>
+        <div class="col-12 col-md-6">
+          <h3 class="fw-bold">All New Secure Solutions</h3>
+          <p class="text-muted">
+            Advanced, attribute-driven control for modern enterprises. Because why settle for ordinary when you can secure your future?
+          </p>
+          <div class="mt-3">
+            <a href="#" class="btn btn-dark fw-bold me-2">Explore Modules</a>
+            <a href="#" class="btn btn-outline-dark fw-bold">Learn More</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shop Secure Cases -->
+  <section class="py-5">
+    <div class="container text-center">
+      <div class="position-relative mb-4">
+        <img src="./Images/giorgio-trovato-6-IyKqyyLNM-unsplash.jpg" class="img-fluid w-50 shadow-sm" alt="Secure Cases BG" />
+        <div class="position-absolute top-50 start-50 translate-middle text-white">
+          <h2 class="fw-bold">Shop Secure Cases</h2>
+          <a href="#" class="btn btn-dark fw-bold mt-2">Shop Now</a>
+        </div>
+      </div>
+      <div class="row g-3 justify-content-center">
+        <div class="col-12 col-md-3">
+          <div class="card border-0 shadow-sm card-hover">
+            <div class="card-body">
+              <h5>iPhone 13</h5>
+              <p class="small text-muted">Secure Cases</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-3">
+          <div class="card border-0 shadow-sm card-hover">
+            <div class="card-body">
+              <h5>iPhone 12</h5>
+              <p class="small text-muted">Secure Cases</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-3">
+          <div class="card border-0 shadow-sm card-hover">
+            <div class="card-body">
+              <h5>iPhone 11 &amp; Older</h5>
+              <p class="small text-muted">Secure Cases</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quote Section -->
+  <section class="py-5 bg-light text-center">
+    <div class="container">
+      <blockquote class="blockquote">
+        <p class="mb-0 fst-italic" style="max-width: 700px; margin: auto;">
+          "Our secure approach redefines access – dynamic, context-aware, and always reliable."
+        </p>
+        <footer class="blockquote-footer mt-2">Executive Tech, Creative Director</footer>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- About ABACSTORE -->
+  <section class="py-5">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-12 col-md-6">
+          <h3>About ABACSTORE</h3>
+          <p class="text-muted">
+            We empower enterprises with attribute-based access control that’s secure, flexible, and scalable. Trust the tried-and-true while embracing next-gen tech.
+          </p>
+          <a href="#" class="btn btn-dark fw-bold">Learn More</a>
+        </div>
+        <div class="col-12 col-md-6">
+          <img src="https://images.unsplash.com/photo-1590172205940-5b6eedf7ec82?w=500&auto=format&fit=crop&q=60" class="img-fluid rounded shadow-sm" alt="About ABACSTORE" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-5 bg-dark text-white">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-6 col-md-3">
+          <h6 class="fw-bold">Support</h6>
+          <ul class="list-unstyled">
+            <li><a href="catalog.html" class="text-white-50 text-decoration-none">Product Categories</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none">Shipping</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none">Returns</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-md-3">
+          <h6 class="fw-bold">About</h6>
+          <ul class="list-unstyled">
+            <li><a href="#" class="text-white-50 text-decoration-none">About Us</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none">Sustainability</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none">Showroom Locator</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-md-3">
+          <h6 class="fw-bold">Resources</h6>
+          <ul class="list-unstyled">
+            <li><a href="#" class="text-white-50 text-decoration-none">Documentation</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none">Blog</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none">Tutorials</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-md-3">
+          <h6 class="fw-bold">Explore</h6>
+          <ul class="list-unstyled">
+            <li><a href="#" class="text-white-50 text-decoration-none">ABAC Insights</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none">Case Studies</a></li>
+            <li><a href="#" class="text-white-50 text-decoration-none">Workshops</a></li>
+          </ul>
+        </div>
+      </div>
+      <hr class="bg-white-50 my-4" />
+      <div class="d-flex flex-column flex-md-row align-items-center justify-content-between">
+        <p class="mb-2 mb-md-0 text-white-50 small">© 2025 ABACSTORE, Inc. All rights reserved.</p>
+        <div class="d-flex gap-3">
+          <a href="#" class="text-white-50 small text-decoration-none">Manage Cookies</a>
+          <a href="#" class="text-white-50 small text-decoration-none">Privacy</a>
+          <a href="#" class="text-white-50 small text-decoration-none">Terms</a>
+          <a href="#" class="text-white-50 small text-decoration-none">Returns</a>
+          <a href="#" class="text-white-50 small text-decoration-none">Accessibility</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Optional Bootstrap Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.js"></script>
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Optional: Responsive JavaScript Enhancements
+    document.addEventListener('DOMContentLoaded', function() {
+      // Disable zoom on input focus for mobile
+      const viewportMeta = document.querySelector('meta[name="viewport"]');
+      const inputs = document.querySelectorAll('input, select, textarea');
+      
+      inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+          viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+        });
+        
+        input.addEventListener('blur', function() {
+          viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

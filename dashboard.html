@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ABACSTORE | Customer Dashboard</title>
+  
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <!-- Google Font: Tektur -->
+  <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  
+  <style>
+    body {
+      font-family: 'Tektur', sans-serif;
+      background-color: #f8f9fa;
+    }
+    .navbar-brand {
+      font-size: 1.8rem;
+    }
+    .dashboard-container {
+      max-width: 1100px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .section-title {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    .tab-content {
+      margin-top: 20px;
+    }
+    .order-card, .address-card, .payment-card, .offer-card {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="index.html">ABACSTORE</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarDashboard">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarDashboard">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link active" href="dashboard.html">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="user-profile.html">Account Settings</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="login.html"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Dashboard Container -->
+  <div class="dashboard-container">
+    <h2 class="section-title text-center fw-bold">Customer Dashboard</h2>
+    
+    <!-- Tabs for Dashboard Sections -->
+    <ul class="nav nav-tabs" id="dashboardTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">Order History</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="addresses-tab" data-bs-toggle="tab" data-bs-target="#addresses" type="button" role="tab">Addresses & Payments</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="offers-tab" data-bs-toggle="tab" data-bs-target="#offers" type="button" role="tab">Special Offers</button>
+      </li>
+    </ul>
+    
+    <div class="tab-content" id="dashboardTabContent">
+      
+      <!-- Order History Tab -->
+      <div class="tab-pane fade show active" id="orders" role="tabpanel">
+        <div id="orderHistory" class="row">
+          <p class="text-center">Loading order history...</p>
+        </div>
+      </div>
+      
+      <!-- Addresses & Payment Methods Tab -->
+      <div class="tab-pane fade" id="addresses" role="tabpanel">
+        <div class="row">
+          <!-- Addresses Section -->
+          <div class="col-12 col-lg-6">
+            <h4>Shipping Addresses</h4>
+            <div id="addressList">
+              <p>Loading addresses...</p>
+            </div>
+            <!-- Form to add/update address (simplified) -->
+            <form id="addressForm" class="mt-3">
+              <div class="mb-3">
+                <input type="text" class="form-control" id="newAddress" placeholder="Enter new address" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Save Address</button>
+              <p id="addressResponse" class="mt-2"></p>
+            </form>
+          </div>
+          <!-- Payment Methods Section -->
+          <div class="col-12 col-lg-6">
+            <h4>Payment Methods</h4>
+            <div id="paymentList">
+              <p>Loading payment methods...</p>
+            </div>
+            <!-- Form to add/update payment method using select options -->
+            <form id="paymentForm" class="mt-3">
+              <div class="mb-3">
+                <label for="newPayment" class="form-label">Select Payment Method</label>
+                <select id="newPayment" class="form-select" required>
+                  <option value="">Select a payment method</option>
+                  <option value="Pay with card">Pay with card</option>
+                  <option value="Transfer">Transfer</option>
+                  <option value="Pay on Delivery">Pay on Delivery</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary">Save Payment Method</button>
+              <p id="paymentResponse" class="mt-2"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Special Offers Tab -->
+      <div class="tab-pane fade" id="offers" role="tabpanel">
+        <div id="specialOffers" class="row">
+          <!-- Sample static offers -->
+          <div class="col-12 col-md-6 col-lg-4 offer-card">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">Discount on Cases</h5>
+                <p class="card-text">Get 20% off on all secure cases this month.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4 offer-card">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">Loyalty Rewards</h5>
+                <p class="card-text">Earn points with every purchase and get exclusive discounts.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4 offer-card">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">Free Shipping</h5>
+                <p class="card-text">Enjoy free shipping on orders over $50.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <!-- Supabase & JavaScript Code -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    
+    // Configuration
+    const config = {
+      supabaseUrl: 'https://jgnabxpbmhjitfsyeqms.supabase.co',
+      supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI'
+    };
+
+    // Dashboard Class
+    class CustomerDashboard {
+      constructor() {
+        // Initialize Supabase client
+        this.supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
+        
+        // Cache DOM elements
+        this.elements = {
+          orderHistory: document.getElementById('orderHistory'),
+          addressList: document.getElementById('addressList'),
+          paymentList: document.getElementById('paymentList'),
+          addressForm: document.getElementById('addressForm'),
+          addressResponse: document.getElementById('addressResponse'),
+          paymentForm: document.getElementById('paymentForm'),
+          paymentResponse: document.getElementById('paymentResponse'),
+          newAddress: document.getElementById('newAddress'),
+          newPayment: document.getElementById('newPayment')
+        };
+
+        // Bind event listeners
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        // Form submission event listeners
+        this.elements.addressForm.addEventListener('submit', this.handleAddressSubmit.bind(this));
+        this.elements.paymentForm.addEventListener('submit', this.handlePaymentSubmit.bind(this));
+
+        // Load dashboard on DOM content loaded
+        document.addEventListener('DOMContentLoaded', this.initializeDashboard.bind(this));
+      }
+
+      async initializeDashboard() {
+        try {
+          const { data: { user } } = await this.supabase.auth.getUser();
+          
+          if (!user) {
+            this.redirectToLogin();
+            return;
+          }
+
+          // Parallel loading of dashboard sections
+          await Promise.all([
+            this.loadOrders(user.id),
+            this.loadAddresses(user.id),
+            this.loadPaymentMethods(user.id)
+          ]);
+        } catch (error) {
+          this.handleError('Dashboard Initialization', error);
+        }
+      }
+
+      redirectToLogin() {
+        window.location.href = 'login.html';
+      }
+
+      // ----------- ORDERS -----------
+      async loadOrders(userId) {
+        try {
+          // Use the exact lowercase table name from your DB: "orders"
+          const { data: orders, error } = await this.supabase
+            .from('orders')
+            .select('*')
+            .eq('user_id', userId)
+            .order('order_date', { ascending: false });
+
+          if (error) throw error;
+
+          const html = (orders && orders.length) 
+            ? orders.map(this.createOrderCard).join('')
+            : '<p class="text-center">No orders found.</p>';
+
+          this.elements.orderHistory.innerHTML = html;
+        } catch (error) {
+          this.handleSectionError('orderHistory', 'Orders', error);
+        }
+      }
+
+      createOrderCard(order) {
+        return `
+          <div class="col-12 order-card">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">Order #${order.id}</h5>
+                <p class="card-text">Date: ${new Date(order.order_date).toLocaleDateString()}</p>
+                <p class="card-text">Total: $${order.total}</p>
+                <p class="card-text">Status: ${order.status}</p>
+                <a href="order-detail.html?id=${order.id}" class="btn btn-outline-primary btn-sm">View Details</a>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // ----------- ADDRESSES -----------
+      async loadAddresses(userId) {
+        try {
+          // Use "addresses" in lowercase
+          const { data: addresses, error } = await this.supabase
+            .from('addresses')
+            .select('*')
+            .eq('user_id', userId);
+
+          if (error) throw error;
+
+          let html;
+          if (addresses && addresses.length) {
+            html = addresses.map(addr => 
+              `<li class="list-group-item">${addr.address_line}</li>`
+            ).join('');
+            html = `<ul class="list-group">${html}</ul>`;
+          } else {
+            html = '<p>No addresses found.</p>';
+          }
+          this.elements.addressList.innerHTML = html;
+        } catch (error) {
+          this.handleSectionError('addressList', 'Addresses', error);
+        }
+      }
+
+      async handleAddressSubmit(e) {
+        e.preventDefault();
+        try {
+          const { data: { user } } = await this.supabase.auth.getUser();
+          const newAddress = this.elements.newAddress.value.trim();
+
+          if (!newAddress) {
+            throw new Error('Address cannot be empty');
+          }
+
+          // Insert into the "addresses" table
+          const { error } = await this.supabase.from('addresses').insert({ 
+            user_id: user.id, 
+            address_line: newAddress 
+          });
+
+          if (error) throw error;
+
+          this.showResponse('addressResponse', 'Address added successfully!', 'success');
+          await this.loadAddresses(user.id);
+          this.elements.newAddress.value = ''; // Clear input
+        } catch (error) {
+          this.showResponse('addressResponse', `Error: ${error.message}`, 'danger');
+        }
+      }
+
+      // ----------- PAYMENT METHODS -----------
+      async loadPaymentMethods(userId) {
+        try {
+          // Use "paymentmethods" in lowercase
+          const { data: payments, error } = await this.supabase
+            .from('paymentmethods')
+            .select('*')
+            .eq('user_id', userId);
+
+          if (error) throw error;
+
+          let html;
+          if (payments && payments.length) {
+            html = payments.map(pm => 
+              `<li class="list-group-item">${pm.card_brand} ending in ${pm.last4}</li>`
+            ).join('');
+            html = `<ul class="list-group">${html}</ul>`;
+          } else {
+            html = '<p>No payment methods found.</p>';
+          }
+          this.elements.paymentList.innerHTML = html;
+        } catch (error) {
+          this.handleSectionError('paymentList', 'Payment Methods', error);
+        }
+      }
+
+      async handlePaymentSubmit(e) {
+        e.preventDefault();
+        try {
+          const { data: { user } } = await this.supabase.auth.getUser();
+          const newPayment = this.elements.newPayment.value;
+
+          if (!newPayment) {
+            throw new Error('Please select a payment method');
+          }
+
+          // Insert into the "paymentmethods" table
+          const { error } = await this.supabase.from('paymentmethods').insert({ 
+            user_id: user.id, 
+            card_brand: newPayment, 
+            last4: '0000' 
+          });
+
+          if (error) throw error;
+
+          this.showResponse('paymentResponse', 'Payment method added successfully!', 'success');
+          await this.loadPaymentMethods(user.id);
+          this.elements.newPayment.selectedIndex = 0; // Reset dropdown
+        } catch (error) {
+          this.showResponse('paymentResponse', `Error: ${error.message}`, 'danger');
+        }
+      }
+
+      // ----------- HELPER METHODS -----------
+      showResponse(elementId, message, type = 'danger') {
+        const responseElement = document.getElementById(elementId);
+        responseElement.textContent = message;
+        responseElement.className = `text-${type} mt-2`;
+      }
+
+      handleSectionError(containerId, sectionName, error) {
+        console.error(`${sectionName} load error:`, error);
+        document.getElementById(containerId).innerHTML = 
+          `<p class="text-danger">Error loading ${sectionName.toLowerCase()}: ${error.message}</p>`;
+      }
+
+      handleError(context, error) {
+        console.error(`${context} error:`, error);
+        alert(`Failed to ${context.toLowerCase()}. Please try again.`);
+      }
+    }
+
+    // Initialize the dashboard when the script loads
+    const dashboard = new CustomerDashboard();
+  </script>
+  
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

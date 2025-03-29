@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ABACSTORE | Checkout</title>
+  
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <!-- Google Font: Tektur -->
+  <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  
+  <style>
+    body {
+      font-family: 'Tektur', sans-serif;
+      background-color: #f8f9fa;
+    }
+    .checkout-container {
+      max-width: 800px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 30px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .section-title {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    .order-summary {
+      background: #f1f1f1;
+      padding: 20px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="index.html">ABACSTORE</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCheckout">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Checkout Container -->
+  <div class="checkout-container">
+    <h2 class="section-title text-center fw-bold">Checkout</h2>
+    
+    <!-- Order Summary Section -->
+    <div class="order-summary mb-4" id="orderSummary">
+      <p class="text-center">Loading order summary...</p>
+    </div>
+    
+    <!-- Checkout Form -->
+    <form id="checkoutForm">
+      <div class="mb-3">
+        <label for="shippingAddress" class="form-label">Shipping Address</label>
+        <textarea id="shippingAddress" class="form-control" rows="3" required></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="paymentMethod" class="form-label">Payment Method</label>
+        <select id="paymentMethod" class="form-select" required>
+          <option value="">Select a payment method</option>
+          <option value="Card">Card</option>
+          <option value="Transfer">Transfer</option>
+          <option value="Pay on Delivery">Pay on Delivery</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="discountCode" class="form-label">Discount Code (optional)</label>
+        <input type="text" id="discountCode" class="form-control" placeholder="Enter discount code">
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Place Order</button>
+      <p id="checkoutResponse" class="mt-3 text-center"></p>
+    </form>
+  </div>
+
+  <!-- Supabase & JS Code -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    
+    // Supabase configuration
+    const SUPABASE_URL = 'https://jgnabxpbmhjitfsyeqms.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Load order summary from the user's cart (assumed to be in a "cart" table)
+    async function loadOrderSummary() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      const { data: cartItems, error } = await supabase
+        .from('cart')
+        .select('*')
+        .eq('user_id', user.id);
+      if (error) {
+        document.getElementById('orderSummary').innerHTML = '<p class="text-danger text-center">Error loading order summary.</p>';
+        return;
+      }
+      if (!cartItems || cartItems.length === 0) {
+        document.getElementById('orderSummary').innerHTML = '<p class="text-center">Your cart is empty.</p>';
+        return;
+      }
+      let total = 0;
+      let summaryHtml = '<ul class="list-group">';
+      cartItems.forEach(item => {
+        const subtotal = item.product_price * item.quantity;
+        total += subtotal;
+        summaryHtml += `
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            ${item.product_name} (x${item.quantity})
+            <span>$${subtotal.toFixed(2)}</span>
+          </li>
+        `;
+      });
+      summaryHtml += `</ul><h5 class="text-end mt-3">Total: $${total.toFixed(2)}</h5>`;
+      document.getElementById('orderSummary').innerHTML = summaryHtml;
+    }
+
+    // Handle checkout form submission
+    document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      const shippingAddress = document.getElementById('shippingAddress').value.trim();
+      const paymentMethod = document.getElementById('paymentMethod').value;
+      const discountCode = document.getElementById('discountCode').value.trim();
+      
+      // Fetch cart items to create order items
+      const { data: cartItems, error: cartError } = await supabase
+        .from('cart')
+        .select('*')
+        .eq('user_id', user.id);
+      if (cartError || !cartItems || cartItems.length === 0) {
+        document.getElementById('checkoutResponse').textContent = 'Your cart is empty or an error occurred.';
+        return;
+      }
+      
+      // Calculate total
+      let total = 0;
+      cartItems.forEach(item => {
+        total += item.product_price * item.quantity;
+      });
+      
+      // Apply discount if discount code is provided (for simplicity, assume 10% discount for any valid code)
+      if (discountCode !== '') {
+        // Normally, you would verify the discount code from a discount_codes table.
+        total = total * 0.90;
+      }
+      
+      // Create an order in the "orders" table
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert([{
+          user_id: user.id,
+          shipping_address: shippingAddress,
+          payment_method: paymentMethod,
+          discount_code: discountCode || null,
+          total: total,
+          status: 'pending'
+        }])
+        .select();
+      
+      if (orderError) {
+        document.getElementById('checkoutResponse').textContent = orderError.message;
+        return;
+      }
+      
+      const orderId = orderData[0].id;
+      
+      // Create order items for each cart item
+      const orderItems = cartItems.map(item => ({
+        order_id: orderId,
+        product_id: item.product_id, // assumes you have a product_id column in the cart table
+        product_name: item.product_name,
+        product_price: item.product_price,
+        quantity: item.quantity,
+        subtotal: item.product_price * item.quantity
+      }));
+      
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+      
+      if (itemsError) {
+        document.getElementById('checkoutResponse').textContent = itemsError.message;
+        return;
+      }
+      
+      // Optionally: Clear the cart after order creation
+      await supabase.from('cart').delete().eq('user_id', user.id);
+      
+      // Redirect to Order Confirmation Page with the order ID in the query string
+      window.location.href = `order-confirmation.html?order_id=${orderId}`;
+    });
+    
+    window.addEventListener('DOMContentLoaded', loadOrderSummary);
+  </script>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ABACSTORE | Account Settings</title>
+  
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  
+  <!-- Google Font: Tektur -->
+  <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400;700&display=swap" rel="stylesheet" />
+  
+  <!-- Bootstrap Icons (if needed) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  
+  <style>
+    body {
+      font-family: 'Tektur', sans-serif;
+      background-color: #f8f9fa;
+    }
+    .navbar-brand {
+      font-size: 1.8rem;
+    }
+    .profile-container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 30px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .section-title {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="index.html">ABACSTORE</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="catalog.html">Products</a></li>
+          <li class="nav-item"><a class="nav-link active" href="profile.html">Account Settings</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Account Settings / Profile Section -->
+  <div class="profile-container">
+    <h2 class="section-title text-center fw-bold">Account Settings</h2>
+    <form id="profileForm">
+      <!-- Email (read-only) -->
+      <div class="mb-3">
+        <label for="email" class="form-label">Email Address</label>
+        <input type="email" id="email" class="form-control" readonly>
+      </div>
+      <!-- Full Name -->
+      <div class="mb-3">
+        <label for="fullName" class="form-label">Full Name</label>
+        <input type="text" id="fullName" class="form-control" placeholder="Enter your full name">
+      </div>
+      <!-- Phone Number -->
+      <div class="mb-3">
+        <label for="phone" class="form-label">Phone Number</label>
+        <input type="tel" id="phone" class="form-control" placeholder="Enter your phone number">
+      </div>
+      <!-- Communication Preferences -->
+      <div class="mb-3">
+        <label class="form-label">Communication Preferences</label>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="newsletter">
+          <label class="form-check-label" for="newsletter">
+            Subscribe to Newsletter
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="smsUpdates">
+          <label class="form-check-label" for="smsUpdates">
+            Receive SMS Updates
+          </label>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+      <p id="profileResponse" class="mt-3 text-center"></p>
+    </form>
+  </div>
+
+  <!-- Supabase & JS Code -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const SUPABASE_URL = 'https://jgnabxpbmhjitfsyeqms.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Load user profile data
+async function loadUserProfile() {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError) {
+      console.error('Authentication Error:', authError);
+      window.location.href = 'login.html';
+      return;
+    }
+
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    // Set email from user authentication
+    document.getElementById('email').value = user.email;
+    
+    // Debug: Log user information
+    console.log('User ID:', user.id);
+    console.log('User Email:', user.email);
+
+    // Attempt to fetch profile with detailed error handling
+    const { data: profile, error } = await supabase
+      .from('Profiles')  // Note: Capitalized first letter
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (error) {
+      console.error('Detailed Profile Fetch Error:', error);
+      
+      // If profile doesn't exist, create a new one
+      if (error.code === 'PGRST116') {
+        const { error: insertError } = await supabase
+          .from('Profiles')
+          .insert({
+            id: user.id,
+            email: user.email,
+            full_name: '',
+            phone: '',
+            newsletter: false,
+            sms_updates: false
+          });
+
+        if (insertError) {
+          console.error('Profile Creation Error:', insertError);
+          document.getElementById('profileResponse').textContent = 
+            'Error creating profile. Please contact support.';
+          return;
+        }
+
+        // If insert successful, set default values
+        document.getElementById('fullName').value = '';
+        document.getElementById('phone').value = '';
+        document.getElementById('newsletter').checked = false;
+        document.getElementById('smsUpdates').checked = false;
+      } else {
+        document.getElementById('profileResponse').textContent = 
+          `Error: ${error.message}`;
+      }
+      return;
+    }
+
+    // Populate form with profile data
+    document.getElementById('fullName').value = profile.full_name || '';
+    document.getElementById('phone').value = profile.phone || '';
+    document.getElementById('newsletter').checked = profile.newsletter || false;
+    document.getElementById('smsUpdates').checked = profile.sms_updates || false;
+
+  } catch (catchError) {
+    console.error('Unexpected Error:', catchError);
+    document.getElementById('profileResponse').textContent = 
+      'An unexpected error occurred. Please try again.';
+  }
+}
+
+// Handle profile form submission
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      window.location.href = 'login.html';
+      return;
+    }
+    
+    const fullName = document.getElementById('fullName').value;
+    const phone = document.getElementById('phone').value;
+    const newsletter = document.getElementById('newsletter').checked;
+    const smsUpdates = document.getElementById('smsUpdates').checked;
+    
+    const { error } = await supabase
+      .from('Profiles')
+      .upsert({
+        id: user.id,
+        email: user.email,
+        full_name: fullName,
+        phone: phone,
+        newsletter: newsletter,
+        sms_updates: smsUpdates
+      }, { 
+        onConflict: 'id' 
+      });
+    
+    if (error) {
+      console.error('Update Error:', error);
+      document.getElementById('profileResponse').textContent = error.message;
+    } else {
+      document.getElementById('profileResponse').textContent = 'Profile updated successfully!';
+    }
+  } catch (catchError) {
+    console.error('Submission Catch Error:', catchError);
+    document.getElementById('profileResponse').textContent = 
+      'An unexpected error occurred during submission.';
+  }
+});
+
+// Initialize the page by loading the user's profile
+window.addEventListener('DOMContentLoaded', loadUserProfile);
+  </script>
+  
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
