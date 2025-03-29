@@ -40,10 +40,10 @@
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <!-- Optional: add additional nav links if needed -->
+      <!-- Optional: additional nav links -->
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <!-- Additional links can go here -->
+          <!-- Additional nav links can go here -->
         </ul>
       </div>
     </div>
@@ -89,7 +89,19 @@
             <label for="signupPassword" class="form-label">Password</label>
             <input type="password" class="form-control" id="signupPassword" placeholder="Password" required>
           </div>
-          <!-- Optional: Add additional fields like full name, phone, or MFA setup here -->
+          <!-- Account Type Selection -->
+          <div class="mb-3">
+            <label for="accountType" class="form-label">Account Type</label>
+            <select id="accountType" class="form-select" required>
+              <option value="user" selected>User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <!-- Admin Code (visible only if Admin is selected) -->
+          <div class="mb-3" id="adminCodeContainer" style="display: none;">
+            <label for="adminCode" class="form-label">Admin Code</label>
+            <input type="text" id="adminCode" class="form-control" placeholder="Enter admin code">
+          </div>
           <button type="submit" class="btn btn-success w-100">Sign Up</button>
           <p id="signupResponse" class="text-center mt-2"></p>
         </form>
@@ -104,7 +116,18 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI';
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Handle login form submission
+    // Toggle admin code input on account type change
+    const accountTypeEl = document.getElementById('accountType');
+    const adminCodeContainer = document.getElementById('adminCodeContainer');
+    accountTypeEl.addEventListener('change', () => {
+      if (accountTypeEl.value === 'admin') {
+        adminCodeContainer.style.display = 'block';
+      } else {
+        adminCodeContainer.style.display = 'none';
+      }
+    });
+
+    // Handle login form submission with redirection based on role
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value;
@@ -114,9 +137,16 @@
         document.getElementById('loginResponse').textContent = error.message;
       } else {
         document.getElementById('loginResponse').textContent = 'Login successful!';
-        // Redirect to customer dashboard (or admin dashboard if role === 'admin')
+        // After login, fetch the user metadata to check role
+        const { data: { user } } = await supabase.auth.getUser();
+        const role = user.user_metadata.role || 'user';
+        // Redirect based on role
         setTimeout(() => {
-          window.location.href = 'dashboard.html';
+          if (role === 'admin') {
+            window.location.href = 'admin-user-management.html';
+          } else {
+            window.location.href = 'dashboard.html';
+          }
         }, 1000);
       }
     });
@@ -126,7 +156,24 @@
       e.preventDefault();
       const email = document.getElementById('signupEmail').value;
       const password = document.getElementById('signupPassword').value;
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const accountType = document.getElementById('accountType').value;
+      const adminCode = document.getElementById('adminCode').value.trim();
+      
+      // If admin account is selected, verify the admin code
+      if (accountType === 'admin') {
+        const validAdminCode = 'SECRET123'; // Replace with secure logic in production
+        if (adminCode !== validAdminCode) {
+          document.getElementById('signupResponse').textContent = 'Invalid admin code.';
+          return;
+        }
+      }
+      
+      // Sign up with additional user metadata for role
+      const { data, error } = await supabase.auth.signUp(
+        { email, password },
+        { data: { role: accountType } }
+      );
+      
       if (error) {
         document.getElementById('signupResponse').textContent = error.message;
       } else {
