@@ -120,11 +120,7 @@
     const accountTypeEl = document.getElementById('accountType');
     const adminCodeContainer = document.getElementById('adminCodeContainer');
     accountTypeEl.addEventListener('change', () => {
-      if (accountTypeEl.value === 'admin') {
-        adminCodeContainer.style.display = 'block';
-      } else {
-        adminCodeContainer.style.display = 'none';
-      }
+      adminCodeContainer.style.display = accountTypeEl.value === 'admin' ? 'block' : 'none';
     });
 
     // Handle login form submission with redirection based on role
@@ -137,9 +133,9 @@
         document.getElementById('loginResponse').textContent = error.message;
       } else {
         document.getElementById('loginResponse').textContent = 'Login successful!';
-        // After login, fetch the user metadata to check role
-        const { data: { user } } = await supabase.auth.getUser();
-        const role = user.user_metadata.role || 'user';
+        // Fetch latest session info which includes user_metadata
+        const { data: { session } } = await supabase.auth.getSession();
+        const role = session?.user?.user_metadata?.role || 'user';
         // Redirect based on role
         setTimeout(() => {
           if (role === 'admin') {

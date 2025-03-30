@@ -8,9 +8,17 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
   <!-- Google Font: Tektur -->
   <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <style>
-    body { font-family: 'Tektur', sans-serif; background-color: #f8f9fa; }
-    .container { max-width: 1100px; margin: 30px auto; }
+    body { 
+      font-family: 'Tektur', sans-serif; 
+      background-color: #f8f9fa; 
+    }
+    .container { 
+      max-width: 1100px; 
+      margin: 30px auto; 
+    }
   </style>
 </head>
 <body>
@@ -50,11 +58,12 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const SUPABASE_URL = 'https://jgnabxpbmhjitfsyeqms.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI'; 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function checkAdmin() {
       const { data: { user } } = await supabase.auth.getUser();
+      // Check if user exists and has a role of 'admin' in user_metadata
       if (!user || user.user_metadata.role !== 'admin') {
         window.location.href = 'login.html';
         return;
@@ -64,9 +73,9 @@
     }
 
     async function loadUsers() {
-      // Assuming you store users in a "profiles" table
+      // Retrieve user profiles (assumes a "profiles" table exists with user info)
       const { data: users, error } = await supabase
-        .from('profiles')
+        .from('Profiles')
         .select('*');
       if (error) {
         document.getElementById('userList').innerHTML = `<p class="text-danger">Error loading users: ${error.message}</p>`;
