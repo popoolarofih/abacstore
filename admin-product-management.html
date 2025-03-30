@@ -74,12 +74,52 @@
     </form>
   </div>
 
+  <!-- Edit Product Modal -->
+  <div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Product</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editProductForm">
+            <input type="hidden" id="editProductId">
+            <div class="mb-3">
+              <label for="editProductName" class="form-label">Product Name</label>
+              <input type="text" id="editProductName" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="editProductPrice" class="form-label">Price</label>
+              <input type="number" step="0.01" id="editProductPrice" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="editProductImage" class="form-label">Image URL</label>
+              <input type="text" id="editProductImage" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label for="editProductDescription" class="form-label">Product Description</label>
+              <textarea id="editProductDescription" class="form-control" rows="3" required></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="saveEditProduct" class="btn btn-primary">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Supabase & JS Code -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const SUPABASE_URL = 'https://jgnabxpbmhjitfsyeqms.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI';
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // Global variable to store loaded products
+    let currentProducts = [];
 
     async function checkAdmin() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -99,6 +139,7 @@
         document.getElementById('productList').innerHTML = `<p class="text-danger">Error: ${error.message}</p>`;
         return;
       }
+      currentProducts = products;
       let html = `<table class="table">
         <thead>
           <tr>
@@ -117,14 +158,61 @@
           <td>${prod.description || ''}</td>
           <td><img src="${prod.image_url}" alt="${prod.name}" style="max-width:50px;"></td>
           <td>
-            <button class="btn btn-sm btn-primary">Edit</button>
-            <button class="btn btn-sm btn-danger">Delete</button>
+            <button class="btn btn-sm btn-primary edit-product" data-product-id="${prod.id}">Edit</button>
+            <button class="btn btn-sm btn-danger delete-product" data-product-id="${prod.id}">Delete</button>
           </td>
         </tr>`;
       });
       html += `</tbody></table>`;
       document.getElementById('productList').innerHTML = html;
+      addEditEventListeners();
     }
+
+    // Attach click events for all Edit buttons
+    function addEditEventListeners() {
+      document.querySelectorAll('.edit-product').forEach(btn => {
+        btn.addEventListener('click', openEditModal);
+      });
+    }
+
+    // Open the edit modal and populate fields
+    function openEditModal(e) {
+      const productId = e.target.getAttribute('data-product-id');
+      const product = currentProducts.find(p => p.id == productId);
+      if (!product) return;
+      document.getElementById('editProductId').value = product.id;
+      document.getElementById('editProductName').value = product.name;
+      document.getElementById('editProductPrice').value = product.price;
+      document.getElementById('editProductImage').value = product.image_url;
+      document.getElementById('editProductDescription').value = product.description;
+      
+      // Show the edit modal
+      const editModal = new bootstrap.Modal(document.getElementById('editProductModal'));
+      editModal.show();
+    }
+
+    // Save changes from the edit modal
+    document.getElementById('saveEditProduct').addEventListener('click', async () => {
+      const id = document.getElementById('editProductId').value;
+      const name = document.getElementById('editProductName').value;
+      const price = parseFloat(document.getElementById('editProductPrice').value);
+      const image_url = document.getElementById('editProductImage').value;
+      const description = document.getElementById('editProductDescription').value;
+      const { error } = await supabase
+        .from('products')
+        .update({ name, price, image_url, description })
+        .eq('id', id);
+      if (error) {
+        alert('Error updating product: ' + error.message);
+      } else {
+        alert('Product updated successfully!');
+        // Hide the modal
+        const editModalEl = document.getElementById('editProductModal');
+        const modalInstance = bootstrap.Modal.getInstance(editModalEl);
+        modalInstance.hide();
+        loadProducts();
+      }
+    });
 
     document.getElementById('productForm').addEventListener('submit', async (e) => {
       e.preventDefault();
