@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ABACSTORE | Login / Sign-Up</title>
+  <title>ABACSTORE | Authentication Portal</title>
   
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
@@ -30,6 +30,41 @@
       border-top: none;
       border-radius: 0 0 5px 5px;
     }
+    .auth-type-selector {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .auth-type-btn {
+      padding: 10px 20px;
+      margin: 0 10px;
+      transition: all 0.3s ease;
+    }
+    .auth-type-btn.active {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .admin-portal, .user-portal {
+      display: none;
+    }
+    .admin-portal.active, .user-portal.active {
+      display: block;
+    }
+    .admin-badge {
+      background-color: #dc3545;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+    .user-badge {
+      background-color: #0d6efd;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
   </style>
 </head>
 <body>
@@ -40,75 +75,142 @@
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <!-- Optional: additional nav links -->
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <!-- Additional nav links can go here -->
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="about.html">About</a>
+          </li>
         </ul>
       </div>
     </div>
   </nav>
   
-  <!-- Authentication Container -->
-  <div class="auth-container">
-    <ul class="nav nav-tabs" id="authTab" role="tablist">
+  <!-- Authentication Type Selector -->
+  <div class="container">
+    <div class="auth-type-selector">
+      <button class="btn btn-primary auth-type-btn active" id="userAuthBtn">
+        User Portal <span class="user-badge">User</span>
+      </button>
+      <button class="btn btn-danger auth-type-btn" id="adminAuthBtn">
+        Admin Portal <span class="admin-badge">Admin</span>
+      </button>
+    </div>
+  </div>
+  
+  <!-- User Authentication Portal -->
+  <div class="auth-container user-portal active" id="userAuthPortal">
+    <h3 class="text-center mb-4">User Authentication</h3>
+    <ul class="nav nav-tabs" id="userAuthTab" role="tablist">
       <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab">Login</button>
+        <button class="nav-link active" id="userLogin-tab" data-bs-toggle="tab" data-bs-target="#userLogin" type="button" role="tab">Login</button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signup" type="button" role="tab">Sign Up</button>
+        <button class="nav-link" id="userSignup-tab" data-bs-toggle="tab" data-bs-target="#userSignup" type="button" role="tab">Sign Up</button>
       </li>
     </ul>
-    <div class="tab-content" id="authTabContent">
-      <!-- Login Form -->
-      <div class="tab-pane fade show active" id="login" role="tabpanel">
-        <form id="loginForm">
+    <div class="tab-content" id="userAuthTabContent">
+      <!-- User Login Form -->
+      <div class="tab-pane fade show active" id="userLogin" role="tabpanel">
+        <form id="userLoginForm">
           <div class="mb-3">
-            <label for="loginEmail" class="form-label">Email address</label>
-            <input type="email" class="form-control" id="loginEmail" placeholder="Enter email" required>
+            <label for="userLoginEmail" class="form-label">Email address</label>
+            <input type="email" class="form-control" id="userLoginEmail" placeholder="Enter email" required>
           </div>
           <div class="mb-3">
-            <label for="loginPassword" class="form-label">Password</label>
-            <input type="password" class="form-control" id="loginPassword" placeholder="Password" required>
+            <label for="userLoginPassword" class="form-label">Password</label>
+            <input type="password" class="form-control" id="userLoginPassword" placeholder="Password" required>
           </div>
-          <!-- Placeholder for MFA token input if required -->
           <button type="submit" class="btn btn-primary w-100">Login</button>
           <p class="mt-3 text-center"><a href="password-reset.html">Forgot Password?</a></p>
-          <p id="loginResponse" class="text-center mt-2"></p>
+          <p id="userLoginResponse" class="text-center mt-2"></p>
         </form>
       </div>
       
-      <!-- Sign-Up Form -->
-      <div class="tab-pane fade" id="signup" role="tabpanel">
-        <form id="signupForm">
+      <!-- User Sign-Up Form -->
+      <div class="tab-pane fade" id="userSignup" role="tabpanel">
+        <form id="userSignupForm">
           <div class="mb-3">
-            <label for="signupEmail" class="form-label">Email address</label>
-            <input type="email" class="form-control" id="signupEmail" placeholder="Enter email" required>
+            <label for="userSignupEmail" class="form-label">Email address</label>
+            <input type="email" class="form-control" id="userSignupEmail" placeholder="Enter email" required>
           </div>
           <div class="mb-3">
-            <label for="signupPassword" class="form-label">Password</label>
-            <input type="password" class="form-control" id="signupPassword" placeholder="Password" required>
+            <label for="userSignupPassword" class="form-label">Password</label>
+            <input type="password" class="form-control" id="userSignupPassword" placeholder="Password" required>
           </div>
-          <!-- Account Type Selection -->
           <div class="mb-3">
-            <label for="accountType" class="form-label">Account Type</label>
-            <select id="accountType" class="form-select" required>
-              <option value="user" selected>User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          <!-- Admin Code (visible only if Admin is selected) -->
-          <div class="mb-3" id="adminCodeContainer" style="display: none;">
-            <label for="adminCode" class="form-label">Admin Code</label>
-            <input type="text" id="adminCode" class="form-control" placeholder="Enter admin code">
+            <label for="userSignupPasswordConfirm" class="form-label">Confirm Password</label>
+            <input type="password" class="form-control" id="userSignupPasswordConfirm" placeholder="Confirm Password" required>
           </div>
           <button type="submit" class="btn btn-success w-100">Sign Up</button>
-          <p id="signupResponse" class="text-center mt-2"></p>
+          <p id="userSignupResponse" class="text-center mt-2"></p>
         </form>
       </div>
     </div>
   </div>
   
+  <!-- Admin Authentication Portal -->
+  <div class="auth-container admin-portal" id="adminAuthPortal">
+    <h3 class="text-center mb-4">Admin Authentication</h3>
+    <ul class="nav nav-tabs" id="adminAuthTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="adminLogin-tab" data-bs-toggle="tab" data-bs-target="#adminLogin" type="button" role="tab">Login</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="adminSignup-tab" data-bs-toggle="tab" data-bs-target="#adminSignup" type="button" role="tab">Sign Up</button>
+      </li>
+    </ul>
+    <div class="tab-content" id="adminAuthTabContent">
+      <!-- Admin Login Form -->
+      <div class="tab-pane fade show active" id="adminLogin" role="tabpanel">
+        <form id="adminLoginForm">
+          <div class="mb-3">
+            <label for="adminLoginEmail" class="form-label">Admin Email</label>
+            <input type="email" class="form-control" id="adminLoginEmail" placeholder="Enter admin email" required>
+          </div>
+          <div class="mb-3">
+            <label for="adminLoginPassword" class="form-label">Password</label>
+            <input type="password" class="form-control" id="adminLoginPassword" placeholder="Password" required>
+          </div>
+          <div class="mb-3">
+            <label for="adminLoginCode" class="form-label">Admin Authentication Code</label>
+            <input type="password" class="form-control" id="adminLoginCode" placeholder="Enter admin code" required>
+          </div>
+          <button type="submit" class="btn btn-danger w-100">Admin Login</button>
+          <p class="mt-3 text-center"><a href="admin-password-reset.html">Forgot Admin Password?</a></p>
+          <p id="adminLoginResponse" class="text-center mt-2"></p>
+        </form>
+      </div>
+      
+      <!-- Admin Sign-Up Form -->
+      <div class="tab-pane fade" id="adminSignup" role="tabpanel">
+        <form id="adminSignupForm">
+          <div class="mb-3">
+            <label for="adminSignupEmail" class="form-label">Admin Email</label>
+            <input type="email" class="form-control" id="adminSignupEmail" placeholder="Enter admin email" required>
+          </div>
+          <div class="mb-3">
+            <label for="adminSignupPassword" class="form-label">Password</label>
+            <input type="password" class="form-control" id="adminSignupPassword" placeholder="Password" required>
+          </div>
+          <div class="mb-3">
+            <label for="adminSignupPasswordConfirm" class="form-label">Confirm Password</label>
+            <input type="password" class="form-control" id="adminSignupPasswordConfirm" placeholder="Confirm Password" required>
+          </div>
+          <div class="mb-3">
+            <label for="adminRegistrationCode" class="form-label">Admin Registration Code</label>
+            <input type="password" class="form-control" id="adminRegistrationCode" placeholder="Enter registration code" required>
+            <small class="text-muted">This code is provided by system administrators only.</small>
+          </div>
+          <button type="submit" class="btn btn-danger w-100">Register as Admin</button>
+          <p id="adminSignupResponse" class="text-center mt-2"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Supabase & JS Code -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -116,64 +218,214 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI';
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Toggle admin code input on account type change
-    const accountTypeEl = document.getElementById('accountType');
-    const adminCodeContainer = document.getElementById('adminCodeContainer');
-    accountTypeEl.addEventListener('change', () => {
-      adminCodeContainer.style.display = accountTypeEl.value === 'admin' ? 'block' : 'none';
+    // Constants
+    const ADMIN_CODE = 'SECRET123'; // In production, use a more secure approach
+    const ADMIN_REGISTRATION_CODE = 'ADMIN_REG_2024'; // In production, use a more secure approach
+
+    // Toggle between User and Admin portals
+    const userAuthBtn = document.getElementById('userAuthBtn');
+    const adminAuthBtn = document.getElementById('adminAuthBtn');
+    const userAuthPortal = document.getElementById('userAuthPortal');
+    const adminAuthPortal = document.getElementById('adminAuthPortal');
+
+    userAuthBtn.addEventListener('click', () => {
+      userAuthBtn.classList.add('active');
+      adminAuthBtn.classList.remove('active');
+      userAuthPortal.classList.add('active');
+      adminAuthPortal.classList.remove('active');
     });
 
-    // Handle login form submission with redirection based on role
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    adminAuthBtn.addEventListener('click', () => {
+      adminAuthBtn.classList.add('active');
+      userAuthBtn.classList.remove('active');
+      adminAuthPortal.classList.add('active');
+      userAuthPortal.classList.remove('active');
+    });
+
+    // ===== USER AUTHENTICATION FUNCTIONS =====
+    
+    // User Login Form
+    document.getElementById('userLoginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
+      const email = document.getElementById('userLoginEmail').value;
+      const password = document.getElementById('userLoginPassword').value;
+      const responseElement = document.getElementById('userLoginResponse');
+      
+      responseElement.textContent = 'Logging in...';
+      
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      
       if (error) {
-        document.getElementById('loginResponse').textContent = error.message;
-      } else {
-        document.getElementById('loginResponse').textContent = 'Login successful!';
-        // Fetch latest session info which includes user_metadata
-        const { data: { session } } = await supabase.auth.getSession();
-        const role = session?.user?.user_metadata?.role || 'user';
-        // Redirect based on role
-        setTimeout(() => {
-          if (role === 'admin') {
-            window.location.href = 'admin-user-management.html';
-          } else {
-            window.location.href = 'dashboard.html';
-          }
-        }, 1000);
+        responseElement.textContent = error.message;
+        responseElement.classList.add('text-danger');
+        return;
       }
+      
+      // Verify user role is not admin
+      const { data: { session } } = await supabase.auth.getSession();
+      const role = session?.user?.user_metadata?.role || 'user';
+      
+      if (role === 'admin') {
+        // Don't allow admins to log in through user portal
+        await supabase.auth.signOut();
+        responseElement.textContent = 'Admin accounts must use the Admin portal.';
+        responseElement.classList.add('text-danger');
+        return;
+      }
+      
+      responseElement.textContent = 'Login successful! Redirecting to user dashboard...';
+      responseElement.classList.add('text-success');
+      
+      // Redirect to user dashboard
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 1500);
     });
-
-    // Handle sign-up form submission
-    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    
+    // User Sign-Up Form
+    document.getElementById('userSignupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('signupEmail').value;
-      const password = document.getElementById('signupPassword').value;
-      const accountType = document.getElementById('accountType').value;
-      const adminCode = document.getElementById('adminCode').value.trim();
+      const email = document.getElementById('userSignupEmail').value;
+      const password = document.getElementById('userSignupPassword').value;
+      const passwordConfirm = document.getElementById('userSignupPasswordConfirm').value;
+      const responseElement = document.getElementById('userSignupResponse');
       
-      // If admin account is selected, verify the admin code
-      if (accountType === 'admin') {
-        const validAdminCode = 'SECRET123'; // Replace with secure logic in production
-        if (adminCode !== validAdminCode) {
-          document.getElementById('signupResponse').textContent = 'Invalid admin code.';
-          return;
-        }
+      // Password confirmation check
+      if (password !== passwordConfirm) {
+        responseElement.textContent = 'Passwords do not match.';
+        responseElement.classList.add('text-danger');
+        return;
       }
       
-      // Sign up with additional user metadata for role
-      const { data, error } = await supabase.auth.signUp(
-        { email, password },
-        { data: { role: accountType } }
-      );
+      responseElement.textContent = 'Creating account...';
+      
+      // Sign up with user role explicitly set
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { 
+            role: 'user'
+          }
+        }
+      });
       
       if (error) {
-        document.getElementById('signupResponse').textContent = error.message;
-      } else {
-        document.getElementById('signupResponse').textContent = 'Sign-up successful! Check your email for confirmation.';
+        responseElement.textContent = error.message;
+        responseElement.classList.add('text-danger');
+        return;
+      }
+      
+      responseElement.textContent = 'Account created successfully! Please check your email for confirmation.';
+      responseElement.classList.add('text-success');
+    });
+    
+    // ===== ADMIN AUTHENTICATION FUNCTIONS =====
+    
+    // Admin Login Form
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('adminLoginEmail').value;
+      const password = document.getElementById('adminLoginPassword').value;
+      const adminCode = document.getElementById('adminLoginCode').value;
+      const responseElement = document.getElementById('adminLoginResponse');
+      
+      // Verify admin code first
+      if (adminCode !== ADMIN_CODE) {
+        responseElement.textContent = 'Invalid admin code.';
+        responseElement.classList.add('text-danger');
+        return;
+      }
+      
+      responseElement.textContent = 'Logging in...';
+      
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (error) {
+        responseElement.textContent = error.message;
+        responseElement.classList.add('text-danger');
+        return;
+      }
+      
+      // Verify user has admin role
+      const { data: { session } } = await supabase.auth.getSession();
+      const role = session?.user?.user_metadata?.role || 'user';
+      
+      if (role !== 'admin') {
+        // Don't allow regular users to log in through admin portal
+        await supabase.auth.signOut();
+        responseElement.textContent = 'This account does not have admin privileges.';
+        responseElement.classList.add('text-danger');
+        return;
+      }
+      
+      responseElement.textContent = 'Admin login successful! Redirecting to admin dashboard...';
+      responseElement.classList.add('text-success');
+      
+      // Redirect to admin dashboard
+      setTimeout(() => {
+        window.location.href = 'admin-user-management.html';
+      }, 1500);
+    });
+    
+    // Admin Sign-Up Form
+    document.getElementById('adminSignupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('adminSignupEmail').value;
+      const password = document.getElementById('adminSignupPassword').value;
+      const passwordConfirm = document.getElementById('adminSignupPasswordConfirm').value;
+      const registrationCode = document.getElementById('adminRegistrationCode').value;
+      const responseElement = document.getElementById('adminSignupResponse');
+      
+      // Password confirmation check
+      if (password !== passwordConfirm) {
+        responseElement.textContent = 'Passwords do not match.';
+        responseElement.classList.add('text-danger');
+        return;
+      }
+      
+      // Verify admin registration code
+      if (registrationCode !== ADMIN_REGISTRATION_CODE) {
+        responseElement.textContent = 'Invalid admin registration code.';
+        responseElement.classList.add('text-danger');
+        return;
+      }
+      
+      responseElement.textContent = 'Creating admin account...';
+      
+      // Sign up with admin role explicitly set
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { 
+            role: 'admin' 
+          }
+        }
+      });
+      
+      if (error) {
+        responseElement.textContent = error.message;
+        responseElement.classList.add('text-danger');
+        return;
+      }
+      
+      responseElement.textContent = 'Admin account created successfully! Please check your email for confirmation.';
+      responseElement.classList.add('text-success');
+    });
+    
+    // Check for existing session on page load and redirect if needed
+    window.addEventListener('DOMContentLoaded', async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        const role = session?.user?.user_metadata?.role || 'user';
+        
+        if (role === 'admin') {
+          window.location.href = 'admin-user-management.html';
+        } else {
+          window.location.href = 'dashboard.html';
+        }
       }
     });
   </script>

@@ -54,7 +54,8 @@
           <li class="nav-item"><a class="nav-link active" href="dashboard.html">Dashboard</a></li>
           <li class="nav-item"><a class="nav-link" href="user-profile.html">Account Settings</a></li>
           <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
-          <li class="nav-item"><a class="nav-link" href="login.html"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+          <!-- Updated logout link with id and empty href for JS handling -->
+          <li class="nav-item"><a id="logout" class="nav-link" href="#"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
         </ul>
       </div>
     </div>
@@ -200,6 +201,9 @@
         this.elements.addressForm.addEventListener('submit', this.handleAddressSubmit.bind(this));
         this.elements.paymentForm.addEventListener('submit', this.handlePaymentSubmit.bind(this));
 
+        // Bind logout functionality
+        document.getElementById('logout').addEventListener('click', this.handleLogout.bind(this));
+
         // Load dashboard on DOM content loaded
         document.addEventListener('DOMContentLoaded', this.initializeDashboard.bind(this));
       }
@@ -228,10 +232,20 @@
         window.location.href = 'login.html';
       }
 
+      async handleLogout(e) {
+        e.preventDefault();
+        try {
+          await this.supabase.auth.signOut();
+          window.location.href = 'login.html';
+        } catch (error) {
+          console.error('Logout error:', error);
+          alert('Error during logout. Please try again.');
+        }
+      }
+
       // ----------- ORDERS -----------
       async loadOrders(userId) {
         try {
-          // Use the exact lowercase table name from your DB: "orders"
           const { data: orders, error } = await this.supabase
             .from('orders')
             .select('*')
@@ -269,7 +283,6 @@
       // ----------- ADDRESSES -----------
       async loadAddresses(userId) {
         try {
-          // Use "addresses" in lowercase
           const { data: addresses, error } = await this.supabase
             .from('addresses')
             .select('*')
@@ -302,7 +315,6 @@
             throw new Error('Address cannot be empty');
           }
 
-          // Insert into the "addresses" table
           const { error } = await this.supabase.from('addresses').insert({ 
             user_id: user.id, 
             address_line: newAddress 
@@ -312,7 +324,7 @@
 
           this.showResponse('addressResponse', 'Address added successfully!', 'success');
           await this.loadAddresses(user.id);
-          this.elements.newAddress.value = ''; // Clear input
+          this.elements.newAddress.value = '';
         } catch (error) {
           this.showResponse('addressResponse', `Error: ${error.message}`, 'danger');
         }
@@ -321,7 +333,6 @@
       // ----------- PAYMENT METHODS -----------
       async loadPaymentMethods(userId) {
         try {
-          // Use "paymentmethods" in lowercase
           const { data: payments, error } = await this.supabase
             .from('paymentmethods')
             .select('*')
@@ -354,7 +365,6 @@
             throw new Error('Please select a payment method');
           }
 
-          // Insert into the "paymentmethods" table
           const { error } = await this.supabase.from('paymentmethods').insert({ 
             user_id: user.id, 
             card_brand: newPayment, 
@@ -365,7 +375,7 @@
 
           this.showResponse('paymentResponse', 'Payment method added successfully!', 'success');
           await this.loadPaymentMethods(user.id);
-          this.elements.newPayment.selectedIndex = 0; // Reset dropdown
+          this.elements.newPayment.selectedIndex = 0;
         } catch (error) {
           this.showResponse('paymentResponse', `Error: ${error.message}`, 'danger');
         }
