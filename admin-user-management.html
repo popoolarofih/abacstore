@@ -24,14 +24,8 @@
       padding: 0.2rem 0.5rem;
       border-radius: 0.25rem;
     }
-    .role-admin {
-      background-color: #dc3545;
-      color: white;
-    }
-    .role-user {
-      background-color: #0d6efd;
-      color: white;
-    }
+    .role-admin { background-color: #dc3545; color: white; }
+    .role-user { background-color: #0d6efd; color: white; }
     .user-status {
       width: 12px;
       height: 12px;
@@ -39,22 +33,11 @@
       border-radius: 50%;
       margin-right: 5px;
     }
-    .status-active {
-      background-color: #28a745;
-    }
-    .status-inactive {
-      background-color: #dc3545;
-    }
-    .loading-spinner {
-      width: 3rem;
-      height: 3rem;
-    }
-    .user-actions button {
-      margin-right: 5px;
-    }
-    .user-filter {
-      margin-bottom: 20px;
-    }
+    .status-active { background-color: #28a745; }
+    .status-inactive { background-color: #dc3545; }
+    .loading-spinner { width: 3rem; height: 3rem; }
+    .user-actions button { margin-right: 5px; }
+    .user-filter { margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -193,21 +176,25 @@
   <!-- Supabase & JS Code -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    
+    // Supabase project URL & anon key
     const SUPABASE_URL = 'https://jgnabxpbmhjitfsyeqms.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI'; 
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI';
+    // The Edge Function endpoint (note the subdomain "functions")
+    const FUNCTIONS_URL = 'https://jgnabxpbmhjitfsyeqms.functions.supabase.co';
+    
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+    
     // Global variables
     let currentAdminUser = null;
     let allUsers = [];
     let userDetailModal;
     let resetPasswordModal;
     
-    // Initialize the page
     async function initPage() {
       await checkAdmin();
       
-      // Setup event listeners
+      // Setup event listeners for search and filtering
       document.getElementById('logoutBtn').addEventListener('click', handleLogout);
       document.getElementById('applyFilters').addEventListener('click', applyFilters);
       document.getElementById('searchBtn').addEventListener('click', applyFilters);
@@ -223,49 +210,51 @@
       document.getElementById('saveUserChanges').addEventListener('click', saveUserChanges);
       document.getElementById('confirmResetPassword').addEventListener('click', resetUserPassword);
       
-      // Load users from Supabase Auth via the Edge Function
+      // Load users from the Edge Function using fetch
       await loadAuthUsers();
     }
     
-    // Check if current user is admin
     async function checkAdmin() {
       const { data: { user }, error } = await supabase.auth.getUser();
       
       if (error || !user) {
         showAlert('You must be logged in as an admin to access this page.', 'danger');
-        setTimeout(() => {
-          window.location.href = 'auth.html';
-        }, 2000);
+        setTimeout(() => { window.location.href = 'auth.html'; }, 2000);
         return;
       }
       
-      // Check if user has admin role
       const role = user.user_metadata?.role || 'user';
       if (role !== 'admin') {
         showAlert('You do not have admin privileges to access this page.', 'danger');
-        setTimeout(() => {
-          window.location.href = 'auth.html';
-        }, 2000);
+        setTimeout(() => { window.location.href = 'auth.html'; }, 2000);
         return;
       }
       
-      // Store the admin user info
       currentAdminUser = user;
       document.getElementById('adminInfo').textContent = `Logged in as: ${user.email}`;
     }
     
-    // Load users from Supabase Auth using an Edge Function (no dummy data)
+    // Using fetch to call the Edge Function to get all users
     async function loadAuthUsers() {
       try {
-        // Call your secure Supabase Edge Function to retrieve all auth users
-        const { data, error } = await supabase.functions.invoke('get-all-users', {
-          body: { admin_request: true }
+        const response = await fetch(`${FUNCTIONS_URL}/get-all-users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({ admin_request: true })
         });
-        if (error) throw error;
-        allUsers = data.users || [];
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        allUsers = result.users || [];
         renderUserList(allUsers);
       } catch (error) {
-        console.error('Failed to load users:', error);
+        console.error('Failed to load users from Edge Function:', error);
         document.getElementById('userList').innerHTML = `
           <div class="alert alert-danger">
             <h5><i class="bi bi-exclamation-triangle-fill"></i> Error retrieving users</h5>
@@ -274,7 +263,6 @@
       }
     }
     
-    // Render the user list table
     function renderUserList(users) {
       if (!users || users.length === 0) {
         document.getElementById('userList').innerHTML = '<div class="alert alert-info">No users found.</div>';
@@ -334,7 +322,7 @@
       html += `</tbody></table>`;
       document.getElementById('userList').innerHTML = html;
       
-      // Add event listeners to the buttons
+      // Attach event listeners for actions
       document.querySelectorAll('.view-user').forEach(btn => {
         btn.addEventListener('click', () => viewUserDetails(btn.dataset.userId));
       });
@@ -346,7 +334,7 @@
       });
     }
     
-    // View user details
+    // Show user details in a modal
     function viewUserDetails(userId) {
       const user = allUsers.find(u => u.id === userId);
       if (!user) return;
@@ -391,46 +379,25 @@
       userDetailModal.show();
     }
     
-    // Save user changes
-    async function saveUserChanges() {
+    // Save changes made in the user details modal
+    function saveUserChanges() {
       const userId = document.getElementById('userId').value;
       const newRole = document.getElementById('userRole').value;
       const emailConfirmed = document.getElementById('emailConfirmed').checked;
       
-      try {
-        // In a real implementation, you would call a secure Supabase Edge Function 
-        // or your server to update user metadata via the Admin API.
-        // For demo purposes, we update the local data.
-        const userIndex = allUsers.findIndex(u => u.id === userId);
-        if (userIndex > -1) {
-          allUsers[userIndex].user_metadata = { ...allUsers[userIndex].user_metadata, role: newRole };
-          allUsers[userIndex].email_confirmed_at = emailConfirmed ? new Date().toISOString() : null;
-        }
-        
-        showAlert('User updated successfully!', 'success');
-        userDetailModal.hide();
-        renderUserList(allUsers);
-      } catch (error) {
-        console.error('Error updating user:', error);
-        showAlert('Failed to update user: ' + error.message, 'danger');
+      const idx = allUsers.findIndex(u => u.id === userId);
+      if (idx > -1) {
+        allUsers[idx].user_metadata = { ...allUsers[idx].user_metadata, role: newRole };
+        allUsers[idx].email_confirmed_at = emailConfirmed ? new Date().toISOString() : null;
       }
+      
+      showAlert('User updated successfully!', 'success');
+      userDetailModal.hide();
+      renderUserList(allUsers);
     }
     
-    // Show reset password modal
-    function showResetPasswordModal(userId, userEmail) {
-      document.getElementById('userEmailReset').value = userEmail;
-      document.getElementById('newPassword').value = '';
-      document.getElementById('confirmNewPassword').value = '';
-      document.getElementById('resetPasswordAlert').innerHTML = '';
-      
-      // Store the user ID as a data attribute for later use
-      document.getElementById('confirmResetPassword').dataset.userId = userId;
-      
-      resetPasswordModal.show();
-    }
-    
-    // Reset user password
-    async function resetUserPassword() {
+    // Reset user password (simulation)
+    function resetUserPassword() {
       const userId = document.getElementById('confirmResetPassword').dataset.userId;
       const newPassword = document.getElementById('newPassword').value;
       const confirmPassword = document.getElementById('confirmNewPassword').value;
@@ -445,66 +412,53 @@
         return;
       }
       
-      try {
-        // In a real implementation, call a secure Edge Function to update the user's password using the Admin API.
-        alertElement.innerHTML = '<div class="alert alert-success">Password reset successfully!</div>';
-        setTimeout(() => {
-          resetPasswordModal.hide();
-        }, 1500);
-      } catch (error) {
-        console.error('Error resetting password:', error);
-        alertElement.innerHTML = `<div class="alert alert-danger">Failed to reset password: ${error.message}</div>`;
-      }
+      // Simulate password reset (in production, call an API)
+      alertElement.innerHTML = '<div class="alert alert-success">Password reset successfully!</div>';
+      setTimeout(() => {
+        resetPasswordModal.hide();
+      }, 1500);
     }
     
-    // Delete user
-    async function deleteUser(userId) {
-      if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-        return;
-      }
+    // Delete user (simulation)
+    function deleteUser(userId) {
+      if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
       
-      try {
-        // In a real implementation, call a secure Edge Function to delete the user via the Admin API.
-        allUsers = allUsers.filter(u => u.id !== userId);
-        renderUserList(allUsers);
-        showAlert('User deleted successfully!', 'success');
-      } catch (error) {
-        console.error('Error deleting user:', error);
-        showAlert('Failed to delete user: ' + error.message, 'danger');
-      }
+      allUsers = allUsers.filter(u => u.id !== userId);
+      renderUserList(allUsers);
+      showAlert('User deleted successfully!', 'success');
     }
     
-    // Apply filters
+    // Apply filters on the user list
     function applyFilters() {
       const roleFilter = document.getElementById('roleFilter').value;
       const statusFilter = document.getElementById('statusFilter').value;
       const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-      
       let filtered = [...allUsers];
       
       if (roleFilter !== 'all') {
-        filtered = filtered.filter(user => (user.user_metadata?.role || 'user') === roleFilter);
+        filtered = filtered.filter(u => (u.user_metadata?.role || 'user') === roleFilter);
       }
       if (statusFilter !== 'all') {
-        filtered = filtered.filter(user => {
-          const isConfirmed = user.email_confirmed_at ? true : false;
+        filtered = filtered.filter(u => {
+          const isConfirmed = u.email_confirmed_at ? true : false;
           return (statusFilter === 'confirmed' && isConfirmed) || (statusFilter === 'unconfirmed' && !isConfirmed);
         });
       }
       if (searchTerm) {
-        filtered = filtered.filter(user => user.email.toLowerCase().includes(searchTerm));
+        filtered = filtered.filter(u => u.email.toLowerCase().includes(searchTerm));
       }
       
       renderUserList(filtered);
     }
     
-    // Handle logout
-    async function handleLogout() {
-      await supabase.auth.signOut();
-      window.location.href = 'auth.html';
+    // Handle logout action
+    function handleLogout() {
+      supabase.auth.signOut().then(() => {
+        window.location.href = 'auth.html';
+      });
     }
     
-    // Show alert
+    // Display alerts in the UI
     function showAlert(message, type = 'info') {
       const alertArea = document.getElementById('alertArea');
       const alert = document.createElement('div');
@@ -522,7 +476,6 @@
       }, 5000);
     }
     
-    // Initialize page when DOM is ready
     document.addEventListener('DOMContentLoaded', initPage);
   </script>
   

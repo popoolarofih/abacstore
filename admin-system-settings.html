@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ABACSTORE | Admin - Settings</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <!-- Google Font: Tektur -->
+  <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    body { 
+      font-family: 'Tektur', sans-serif; 
+      background-color: #f8f9fa; 
+    }
+    .container { 
+      max-width: 1100px; 
+      margin: 30px auto; 
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">ABACSTORE Admin</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="adminNavbar">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="admin-user-management.html">User Management</a></li>
+          <li class="nav-item"><a class="nav-link" href="admin-product-management.html">Product Management</a></li>
+          <li class="nav-item"><a class="nav-link" href="admin-order-management.html">Order Management</a></li>
+          <li class="nav-item"><a class="nav-link" href="admin-policy-management.html">Policy Management</a></li>
+          <li class="nav-item"><a class="nav-link" href="admin-audit-logs.html">Audit Logs</a></li>
+          <li class="nav-item"><a class="nav-link" href="admin-reports-analytics.html">Reports & Analytics</a></li>
+          <li class="nav-item"><a class="nav-link active" href="admin-settings.html">Settings</a></li>
+          <li class="nav-item"><a class="nav-link" id="logoutBtn" href="#"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Admin Settings Content -->
+  <div class="container mt-5">
+    <h1>Admin Settings</h1>
+    <p id="adminInfo" class="text-muted"></p>
+    <div id="alertArea"></div>
+    <div class="card mt-4">
+      <div class="card-header">
+        Site Configuration
+      </div>
+      <div class="card-body">
+        <form id="settingsForm">
+          <div class="mb-3">
+            <label for="siteName" class="form-label">Site Name</label>
+            <input type="text" id="siteName" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="contactEmail" class="form-label">Contact Email</label>
+            <input type="email" id="contactEmail" class="form-control" required>
+          </div>
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="maintenanceMode">
+            <label class="form-check-label" for="maintenanceMode">Maintenance Mode</label>
+          </div>
+          <div class="mb-3">
+            <label for="supportPhone" class="form-label">Support Phone</label>
+            <input type="text" id="supportPhone" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-primary">Save Settings</button>
+          <p id="settingsResponse" class="mt-2"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Supabase & JS Code -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    
+    // Supabase project URL & anon key
+    const SUPABASE_URL = 'https://jgnabxpbmhjitfsyeqms.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let currentAdminUser = null;
+    
+    async function initPage() {
+      await checkAdmin();
+      await loadSettings();
+      document.getElementById('settingsForm').addEventListener('submit', saveSettings);
+      document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+    }
+    
+    async function checkAdmin() {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
+        showAlert('You must be logged in as an admin to access this page.', 'danger');
+        setTimeout(() => window.location.href = 'auth.html', 2000);
+        return;
+      }
+      if ((user.user_metadata?.role || 'user') !== 'admin') {
+        showAlert('Admin privileges required.', 'danger');
+        setTimeout(() => window.location.href = 'auth.html', 2000);
+        return;
+      }
+      currentAdminUser = user;
+      document.getElementById('adminInfo').textContent = `Logged in as: ${user.email}`;
+    }
+    
+    // Load settings from the "settings" table (assumes a single row exists)
+    async function loadSettings() {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('*')
+        .single();
+      
+      if (error) {
+        showAlert(`Error loading settings: ${error.message}`, 'danger');
+        return;
+      }
+      
+      // Populate form fields with loaded settings
+      document.getElementById('siteName').value = data.site_name || '';
+      document.getElementById('contactEmail').value = data.contact_email || '';
+      document.getElementById('maintenanceMode').checked = data.maintenance_mode || false;
+      document.getElementById('supportPhone').value = data.support_phone || '';
+    }
+    
+    // Save settings to the "settings" table (update existing row)
+    async function saveSettings(e) {
+      e.preventDefault();
+      const siteName = document.getElementById('siteName').value;
+      const contactEmail = document.getElementById('contactEmail').value;
+      const maintenanceMode = document.getElementById('maintenanceMode').checked;
+      const supportPhone = document.getElementById('supportPhone').value;
+      
+      const { error } = await supabase
+        .from('settings')
+        .update({
+          site_name: siteName,
+          contact_email: contactEmail,
+          maintenance_mode: maintenanceMode,
+          support_phone: supportPhone
+        })
+        .match({ id: 1 });  // Assumes the settings row has an id of 1
+      
+      if (error) {
+        document.getElementById('settingsResponse').textContent = `Error: ${error.message}`;
+      } else {
+        document.getElementById('settingsResponse').textContent = 'Settings saved successfully!';
+      }
+    }
+    
+    function handleLogout() {
+      supabase.auth.signOut().then(() => {
+        window.location.href = 'auth.html';
+      });
+    }
+    
+    function showAlert(message, type = 'info') {
+      const alertArea = document.getElementById('alertArea');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type} alert-dismissible fade show`;
+      alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      alertArea.innerHTML = '';
+      alertArea.appendChild(alert);
+      
+      setTimeout(() => {
+        const bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+      }, 5000);
+    }
+    
+    document.addEventListener('DOMContentLoaded', initPage);
+  </script>
+  
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
