@@ -307,7 +307,7 @@
       if (error || !user) {
         showAlert('You must be logged in to access this page.', 'danger');
         setTimeout(() => {
-          window.location.href = 'auth.html';
+          window.location.href = 'login.html';
         }, 2000);
         return;
       }
@@ -317,7 +317,7 @@
       if (role !== 'admin') {
         showAlert('You do not have admin privileges.', 'danger');
         setTimeout(() => {
-          window.location.href = 'auth.html';
+          window.location.href = 'login.html';
         }, 2000);
         return;
       }
@@ -610,7 +610,7 @@
     // ---------------------------
     function handleLogout() {
       supabase.auth.signOut().then(() => {
-        window.location.href = 'auth.html';
+        window.location.href = 'login.html';
       });
     }
 

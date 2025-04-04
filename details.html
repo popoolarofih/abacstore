@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ABACSTORE | Product Detail</title>
-  
+  <meta charset="UTF-8" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>  
+  <title>ABACSTORE | Product Detail</title>  
+   
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
   
@@ -49,10 +49,8 @@
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="catalog.html">Products</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">Solutions</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
-          <li class="nav-item ms-3"><a class="nav-link" href="#"><i class="bi bi-person"></i></a></li>
-          <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-cart"></i></a></li>
+          <li class="nav-item ms-3"><a class="nav-link" href="login.html"><i class="bi bi-person"></i></a></li>
+          <li class="nav-item"><a class="nav-link" href="cart.html"><i class="bi bi-cart"></i></a></li>
         </ul>
       </div>
     </div>
@@ -66,13 +64,6 @@
         <p class="text-center">Loading product details...</p>
       </div>
       <hr>
-      <!-- Reviews Section -->
-      <div id="reviews-section" class="mt-5">
-        <h3 class="fw-bold mb-4">Reviews</h3>
-        <div id="reviews-list">
-          <p class="text-center">Loading reviews...</p>
-        </div>
-      </div>
     </div>
   </section>
   
@@ -97,8 +88,22 @@
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(param);
     }
-    
-    // Function to load product details
+
+    // Global variable to store session
+    let currentSession = null;
+
+    // Check if user is logged in and get session
+    async function getSession() {
+      if (currentSession) return currentSession;
+      
+      const { data, error } = await supabase.auth.getSession();
+      if (data && data.session) {
+        currentSession = data.session;
+        return currentSession;
+      }
+      return null;
+    }
+
     async function loadProductDetail() {
       const productId = getQueryParam('id');
       if (!productId) {
@@ -111,7 +116,7 @@
         .select('*')
         .eq('id', productId)
         .single();
-      
+        
       if (error) {
         console.error('Error fetching product:', error);
         document.getElementById('product-detail').innerHTML = '<p class="text-center text-danger">Error loading product details.</p>';
@@ -124,55 +129,105 @@
         </div>
         <div class="col-12 col-md-6">
           <h2 class="fw-bold">${product.name}</h2>
-          <p class="fs-4 text-primary">$${product.price}</p>
+          <p class="fs-4 text-primary">#${product.price}</p>
           <p>${product.description || 'No description available.'}</p>
-          <a href="#" class="btn btn-primary">Add to Cart</a>
+          <div class="d-flex align-items-center">
+            <div class="me-3">
+              <label for="quantity" class="form-label">Quantity:</label>
+              <input type="number" id="quantity" class="form-control" value="1" min="1" style="width: 80px;">
+            </div>
+            <button id="addToCartBtn" class="btn btn-primary">Add to Cart</button>
+          </div>
+          <div id="cartMessage" class="mt-3"></div>
         </div>
       `;
       document.getElementById('product-detail').innerHTML = productHtml;
+      
+      // Add event listener to the Add to Cart button
+      document.getElementById('addToCartBtn').addEventListener('click', () => addToCart(product));
     }
-    
-    // Function to load product reviews
-    async function loadProductReviews() {
-      const productId = getQueryParam('id');
-      if (!productId) return;
-      
-      // Assuming reviews table with columns: id, product_id, review_text, rating, created_at
-      const { data: reviews, error } = await supabase
-        .from('reviews')
-        .select('*')
-        .eq('product_id', productId);
-      
-      if (error) {
-        console.error('Error fetching reviews:', error);
-        document.getElementById('reviews-list').innerHTML = '<p class="text-center text-danger">Error loading reviews.</p>';
-        return;
-      }
-      
-      if (reviews.length === 0) {
-        document.getElementById('reviews-list').innerHTML = '<p class="text-center">No reviews yet.</p>';
-        return;
-      }
-      
-      let reviewsHtml = '';
-      reviews.forEach(review => {
-        reviewsHtml += `
-          <div class="review">
-            <div class="mb-2">
-              ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
+
+    // Add to cart function
+    async function addToCart(product) {
+      try {
+        // Check if user is logged in
+        const session = await getSession();
+        
+        if (!session) {
+          // If user is not logged in, show message with login link
+          document.getElementById('cartMessage').innerHTML = `
+            <div class="alert alert-warning">
+              Please <a href="login.html">login</a> to add items to your cart.
             </div>
-            <p>${review.review_text}</p>
-            <small class="text-muted">Posted on ${new Date(review.created_at).toLocaleDateString()}</small>
+          `;
+          return;
+        }
+        
+        // Get quantity
+        const quantity = parseInt(document.getElementById('quantity').value);
+        if (isNaN(quantity) || quantity < 1) {
+          document.getElementById('cartMessage').innerHTML = `
+            <div class="alert alert-danger">
+              Please select a valid quantity.
+            </div>
+          `;
+          return;
+        }
+        
+        // For debugging purposes - display the user ID we're trying to use
+        console.log("Current user ID:", session.user.id);
+        
+        // Create a temporary cart item for the guest user if not logged in
+        // or insert into the database if logged in
+        const { data, error: insertError } = await supabase
+          .from('cart')
+          .insert({
+            user_id: session.user.id,
+            product_name: product.name,
+            product_price: product.price,
+            product_image_url: product.image_url,
+            quantity: quantity
+          });
+        
+        if (insertError) {
+          console.error('Error adding to cart:', insertError);
+          
+          // Display a more specific error message
+          if (insertError.code === '23503') { // Foreign key violation
+            document.getElementById('cartMessage').innerHTML = `
+              <div class="alert alert-danger">
+                Session error. Please try logging out and back in.
+              </div>
+            `;
+          } else {
+            document.getElementById('cartMessage').innerHTML = `
+              <div class="alert alert-danger">
+                Error adding item to cart: ${insertError.message}
+              </div>
+            `;
+          }
+        } else {
+          document.getElementById('cartMessage').innerHTML = `
+            <div class="alert alert-success">
+              Item added to cart! <a href="cart.html">View Cart</a>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Unexpected error:', error);
+        document.getElementById('cartMessage').innerHTML = `
+          <div class="alert alert-danger">
+            An unexpected error occurred. Please try again.
           </div>
         `;
-      });
-      document.getElementById('reviews-list').innerHTML = reviewsHtml;
+      }
     }
     
     // Load product details and reviews on page load
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
+      // Pre-load session
+      await getSession();
       loadProductDetail();
-      loadProductReviews();
     });
   </script>
   
