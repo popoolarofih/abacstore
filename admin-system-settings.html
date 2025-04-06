@@ -19,6 +19,26 @@
       max-width: 1100px; 
       margin: 30px auto; 
     }
+    .profile-img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #dee2e6;
+    }
+    .nav-tabs .nav-link {
+      font-weight: 500;
+    }
+    .form-feedback {
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+    .success-feedback {
+      color: #198754;
+    }
+    .error-feedback {
+      color: #dc3545;
+    }
   </style>
 </head>
 <body>
@@ -36,7 +56,6 @@
           <li class="nav-item"><a class="nav-link" href="admin-order-management.html">Order Management</a></li>
           <li class="nav-item"><a class="nav-link" href="admin-policy-management.html">Policy Management</a></li>
           <li class="nav-item"><a class="nav-link" href="admin-audit-logs.html">Audit Logs</a></li>
-          <li class="nav-item"><a class="nav-link" href="admin-reports-analytics.html">Reports & Analytics</a></li>
           <li class="nav-item"><a class="nav-link active" href="admin-settings.html">Settings</a></li>
           <li class="nav-item"><a class="nav-link" id="logoutBtn" href="#"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
         </ul>
@@ -46,14 +65,39 @@
   
   <!-- Admin Settings Content -->
   <div class="container mt-5">
-    <h1>Admin Settings</h1>
-    <p id="adminInfo" class="text-muted"></p>
-    <div id="alertArea"></div>
-    <div class="card mt-4">
-      <div class="card-header">
-        Site Configuration
+    <div class="row mb-4">
+      <div class="col">
+        <h1>Admin Settings</h1>
+        <p id="adminInfo" class="text-muted"></p>
       </div>
-      <div class="card-body">
+    </div>
+    
+    <div id="alertArea"></div>
+    
+    <!-- Tabs Navigation -->
+    <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="site-tab" data-bs-toggle="tab" data-bs-target="#site" type="button" role="tab">
+          <i class="bi bi-gear"></i> Site Configuration
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">
+          <i class="bi bi-person-circle"></i> Admin Profile
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
+          <i class="bi bi-shield-lock"></i> Security
+        </button>
+      </li>
+    </ul>
+    
+    <!-- Tab Content -->
+    <div class="tab-content bg-white p-4 border border-top-0 rounded-bottom shadow-sm">
+      <!-- Site Configuration Tab -->
+      <div class="tab-pane fade show active" id="site" role="tabpanel" aria-labelledby="site-tab">
+        <h4 class="mb-4">Site Configuration</h4>
         <form id="settingsForm">
           <div class="mb-3">
             <label for="siteName" class="form-label">Site Name</label>
@@ -72,7 +116,82 @@
             <input type="text" id="supportPhone" class="form-control">
           </div>
           <button type="submit" class="btn btn-primary">Save Settings</button>
-          <p id="settingsResponse" class="mt-2"></p>
+          <p id="settingsResponse" class="form-feedback"></p>
+        </form>
+      </div>
+      
+      <!-- Admin Profile Tab -->
+      <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+        <h4 class="mb-4">Admin Profile</h4>
+        <div class="row">
+          <div class="col-md-3 text-center mb-4">
+            <div id="profileImageContainer">
+              <img src="data:image/png;base64,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" alt="Admin profile" class="profile-img mb-3" id="profileImage">
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="changeProfileImageBtn">
+              <i class="bi bi-camera"></i> Change Photo
+            </button>
+            <input type="file" id="profileImageInput" accept="image/*" class="d-none">
+          </div>
+          <div class="col-md-9">
+            <form id="adminProfileForm">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="firstName" class="form-label">First Name</label>
+                  <input type="text" id="firstName" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="lastName" class="form-label">Last Name</label>
+                  <input type="text" id="lastName" class="form-control" required>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="displayName" class="form-label">Display Name</label>
+                <input type="text" id="displayName" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label for="adminEmail" class="form-label">Email</label>
+                <input type="email" id="adminEmail" class="form-control" readonly>
+                <small class="text-muted">Email cannot be changed. Contact system administrator.</small>
+              </div>
+              <div class="mb-3">
+                <label for="adminPhone" class="form-label">Phone Number</label>
+                <input type="tel" id="adminPhone" class="form-control">
+              </div>
+              <div class="mb-3">
+                <label for="adminBio" class="form-label">Bio / Description</label>
+                <textarea id="adminBio" class="form-control" rows="3"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Update Profile</button>
+              <p id="profileResponse" class="form-feedback"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Security Tab -->
+      <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
+        <h4 class="mb-4">Security Settings</h4>
+        <form id="securityForm">
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label">Current Password</label>
+            <input type="password" id="currentPassword" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="newPassword" class="form-label">New Password</label>
+            <input type="password" id="newPassword" class="form-control" required>
+            <small class="text-muted">Password must be at least 8 characters and include numbers, lowercase and uppercase letters.</small>
+          </div>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+            <input type="password" id="confirmPassword" class="form-control" required>
+          </div>
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="enableTwoFactor">
+            <label class="form-check-label" for="enableTwoFactor">Enable Two-Factor Authentication</label>
+          </div>
+          <button type="submit" class="btn btn-primary">Update Security Settings</button>
+          <p id="securityResponse" class="form-feedback"></p>
         </form>
       </div>
     </div>
@@ -82,17 +201,27 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     
-    // Supabase project URL & anon key
+    // Supabase project URL & anon key (used for client-side operations)
     const SUPABASE_URL = 'https://jgnabxpbmhjitfsyeqms.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI';
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     let currentAdminUser = null;
+    let adminProfileData = null;
     
     async function initPage() {
       await checkAdmin();
       await loadSettings();
+      await loadAdminProfile();
+      
+      // Add event listeners
       document.getElementById('settingsForm').addEventListener('submit', saveSettings);
+      document.getElementById('adminProfileForm').addEventListener('submit', saveAdminProfile);
+      document.getElementById('securityForm').addEventListener('submit', updateSecurity);
+      document.getElementById('changeProfileImageBtn').addEventListener('click', () => {
+        document.getElementById('profileImageInput').click();
+      });
+      document.getElementById('profileImageInput').addEventListener('change', handleProfileImageChange);
       document.getElementById('logoutBtn').addEventListener('click', handleLogout);
     }
     
@@ -103,16 +232,19 @@
         setTimeout(() => window.location.href = 'login.html', 2000);
         return;
       }
+      
+      // Check if user has admin role in user_metadata
       if ((user.user_metadata?.role || 'user') !== 'admin') {
         showAlert('Admin privileges required.', 'danger');
         setTimeout(() => window.location.href = 'login.html', 2000);
         return;
       }
+      
       currentAdminUser = user;
       document.getElementById('adminInfo').textContent = `Logged in as: ${user.email}`;
     }
     
-    // Load settings from the "settings" table (assumes a single row exists)
+    // Load site settings from the "settings" table (assumes a single row exists)
     async function loadSettings() {
       const { data, error } = await supabase
         .from('settings')
@@ -131,9 +263,45 @@
       document.getElementById('supportPhone').value = data.support_phone || '';
     }
     
-    // Save settings to the "settings" table (update existing row)
+    // Load admin profile data from "admin_profiles" table
+    async function loadAdminProfile() {
+      if (!currentAdminUser) return;
+      
+      const { data, error } = await supabase
+        .from('admin_profiles')
+        .select('*')
+        .eq('user_id', currentAdminUser.id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+        showAlert(`Error loading admin profile: ${error.message}`, 'danger');
+        return;
+      }
+      
+      adminProfileData = data || {};
+      
+      // Populate admin profile form
+      document.getElementById('firstName').value = adminProfileData.first_name || '';
+      document.getElementById('lastName').value = adminProfileData.last_name || '';
+      document.getElementById('displayName').value = adminProfileData.display_name || '';
+      document.getElementById('adminEmail').value = currentAdminUser.email || '';
+      document.getElementById('adminPhone').value = adminProfileData.phone || '';
+      document.getElementById('adminBio').value = adminProfileData.bio || '';
+      document.getElementById('enableTwoFactor').checked = adminProfileData.two_factor_enabled || false;
+      
+      // Set profile image if exists
+      if (adminProfileData.avatar_url) {
+        document.getElementById('profileImage').src = adminProfileData.avatar_url;
+      }
+    }
+    
+    // Save site settings to the "settings" table
     async function saveSettings(e) {
       e.preventDefault();
+      const responseElement = document.getElementById('settingsResponse');
+      responseElement.textContent = 'Saving...';
+      responseElement.className = 'form-feedback';
+      
       const siteName = document.getElementById('siteName').value;
       const contactEmail = document.getElementById('contactEmail').value;
       const maintenanceMode = document.getElementById('maintenanceMode').checked;
@@ -145,14 +313,174 @@
           site_name: siteName,
           contact_email: contactEmail,
           maintenance_mode: maintenanceMode,
-          support_phone: supportPhone
+          support_phone: supportPhone,
+          updated_at: new Date().toISOString(),
+          updated_by: currentAdminUser.id
         })
-        .match({ id: 1 });  // Assumes the settings row has an id of 1
+        .eq('id', 1); // Assumes the settings row has an id of 1
       
       if (error) {
-        document.getElementById('settingsResponse').textContent = `Error: ${error.message}`;
+        responseElement.textContent = `Error: ${error.message}`;
+        responseElement.className = 'form-feedback error-feedback';
       } else {
-        document.getElementById('settingsResponse').textContent = 'Settings saved successfully!';
+        responseElement.textContent = 'Settings saved successfully!';
+        responseElement.className = 'form-feedback success-feedback';
+      }
+    }
+    
+    // Save admin profile to the "admin_profiles" table
+    async function saveAdminProfile(e) {
+      e.preventDefault();
+      const responseElement = document.getElementById('profileResponse');
+      responseElement.textContent = 'Updating profile...';
+      responseElement.className = 'form-feedback';
+      
+      if (!currentAdminUser) {
+        responseElement.textContent = 'Authentication error. Please login again.';
+        responseElement.className = 'form-feedback error-feedback';
+        return;
+      }
+      
+      const profileData = {
+        user_id: currentAdminUser.id,
+        first_name: document.getElementById('firstName').value,
+        last_name: document.getElementById('lastName').value,
+        display_name: document.getElementById('displayName').value,
+        phone: document.getElementById('adminPhone').value,
+        bio: document.getElementById('adminBio').value,
+        updated_at: new Date().toISOString()
+      };
+      
+      let error;
+      
+      // Check if profile exists and update or insert accordingly
+      if (adminProfileData && adminProfileData.id) {
+        const { error: updateError } = await supabase
+          .from('admin_profiles')
+          .update(profileData)
+          .eq('id', adminProfileData.id);
+        error = updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('admin_profiles')
+          .insert({
+            ...profileData,
+            created_at: new Date().toISOString()
+          });
+        error = insertError;
+      }
+      
+      if (error) {
+        responseElement.textContent = `Error: ${error.message}`;
+        responseElement.className = 'form-feedback error-feedback';
+      } else {
+        responseElement.textContent = 'Profile updated successfully!';
+        responseElement.className = 'form-feedback success-feedback';
+        await loadAdminProfile();
+      }
+    }
+    
+    // Update security settings (password update and two-factor)
+    async function updateSecurity(e) {
+      e.preventDefault();
+      const responseElement = document.getElementById('securityResponse');
+      responseElement.textContent = 'Updating security settings...';
+      responseElement.className = 'form-feedback';
+      
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const enableTwoFactor = document.getElementById('enableTwoFactor').checked;
+      
+      if (newPassword !== confirmPassword) {
+        responseElement.textContent = 'New passwords do not match';
+        responseElement.className = 'form-feedback error-feedback';
+        return;
+      }
+      
+      // Update password if provided
+      if (currentPassword && newPassword) {
+        const { error } = await supabase.auth.updateUser({
+          password: newPassword
+        });
+        
+        if (error) {
+          responseElement.textContent = `Password update error: ${error.message}`;
+          responseElement.className = 'form-feedback error-feedback';
+          return;
+        }
+      }
+      
+      // Update two-factor setting in admin profile
+      const { error } = await supabase
+        .from('admin_profiles')
+        .update({
+          two_factor_enabled: enableTwoFactor,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', currentAdminUser.id);
+      
+      if (error) {
+        responseElement.textContent = `Security settings update error: ${error.message}`;
+        responseElement.className = 'form-feedback error-feedback';
+      } else {
+        responseElement.textContent = 'Security settings updated successfully!';
+        responseElement.className = 'form-feedback success-feedback';
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+      }
+    }
+    
+    // Handle profile image change and upload to Supabase Storage
+    async function handleProfileImageChange(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      if (!file.type.startsWith('image/')) {
+        showAlert('Please select an image file (JPEG, PNG, etc.)', 'warning');
+        return;
+      }
+      
+      // Create a temporary URL for preview
+      const objectURL = URL.createObjectURL(file);
+      document.getElementById('profileImage').src = objectURL;
+      
+      // Prepare file details for upload
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${currentAdminUser.id}-${Date.now()}.${fileExt}`;
+      const filePath = `admin_avatars/${fileName}`;
+      
+      // Upload the file to Supabase Storage (bucket: "user_uploads")
+      const { error: uploadError } = await supabase.storage
+        .from('user_uploads')
+        .upload(filePath, file);
+      
+      if (uploadError) {
+        showAlert(`Error uploading image: ${uploadError.message}`, 'danger');
+        return;
+      }
+      
+      // Retrieve the public URL for the uploaded file
+      const { data } = supabase.storage
+        .from('user_uploads')
+        .getPublicUrl(filePath);
+      
+      const avatarUrl = data.publicUrl;
+      
+      // Update admin profile with the new avatar URL
+      const { error: updateError } = await supabase
+        .from('admin_profiles')
+        .update({
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', currentAdminUser.id);
+      
+      if (updateError) {
+        showAlert(`Error updating profile image: ${updateError.message}`, 'danger');
+      } else {
+        showAlert('Profile image updated successfully!', 'success');
       }
     }
     
@@ -174,8 +502,12 @@
       alertArea.appendChild(alert);
       
       setTimeout(() => {
-        const bsAlert = new bootstrap.Alert(alert);
-        bsAlert.close();
+        try {
+          const bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        } catch (e) {
+          alert.remove();
+        }
       }, 5000);
     }
     

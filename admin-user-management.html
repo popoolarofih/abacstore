@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />  
+  <meta charset="UTF-8" />   
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
   <title>ABACSTORE | Admin - User Management</title> 
 
@@ -61,7 +61,7 @@
           <li class="nav-item"><a class="nav-link" href="admin-order-management.html">Order Management</a></li>
           <li class="nav-item"><a class="nav-link" href="admin-policy-management.html">Policy Management</a></li>
           <li class="nav-item"><a class="nav-link" href="admin-audit-logs.html">Audit Logs</a></li>
-          <li class="nav-item"><a class="nav-link" href="admin-reports-analytics.html">Reports & Analytics</a></li>
+          
           <li class="nav-item"><a class="nav-link" href="admin-system-settings.html">System Settings</a></li>
           <li class="nav-item">
             <a class="nav-link" id="logoutBtn" href="">
@@ -134,7 +134,7 @@
     </div>
   </div>
 
-  <!-- User Details Modal (optional) -->
+  <!-- User Details Modal -->
   <div 
     class="modal fade" 
     id="userDetailModal" 
@@ -175,7 +175,7 @@
     </div>
   </div>
 
-  <!-- Reset Password Modal (optional) -->
+  <!-- Reset Password Modal -->
   <div 
     class="modal fade" 
     id="resetPasswordModal" 
@@ -248,33 +248,22 @@
   <!-- Supabase & JS Code -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    // ---------------------------
-    // Supabase Config
-    // ---------------------------
     const SUPABASE_URL = 'https://jgnabxpbmhjitfsyeqms.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NjM1OTQsImV4cCI6MjA1ODUzOTU5NH0.c0j_548Qmb5TKKvbXUWddgqQhxyzG_Fi_wzm-c8_RaI';
-   
+    const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnbmFieHBibWhqaXRmc3llcW1zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0Mjk2MzU5NCwiZXhwIjoyMDU4NTM5NTk0fQ.o4nsz7sQtUucrvqpGcHmRxKuL1KYTOHenrWc4l9Wya0'; // keep secret in real apps
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
-    // ---------------------------
-    // Global Variables
-    // ---------------------------
     let currentAdminUser = null;
     let allUsers = [];
     let userDetailModal;
     let resetPasswordModal;
 
-    // ---------------------------
-    // Main Initialization
-    // ---------------------------
     document.addEventListener('DOMContentLoaded', initPage);
 
     async function initPage() {
       await checkAdmin();
 
-      // Setup event listeners for filters, search, and logout
+      // Basic UI hooks
       document.getElementById('logoutBtn').addEventListener('click', handleLogout);
       document.getElementById('applyFilters').addEventListener('click', applyFilters);
       document.getElementById('searchBtn').addEventListener('click', applyFilters);
@@ -285,91 +274,74 @@
       // Initialize Bootstrap modals
       userDetailModal = new bootstrap.Modal(document.getElementById('userDetailModal'));
       resetPasswordModal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
-
-      // Setup modal event listeners (if you're actually using them)
       document.getElementById('saveUserChanges').addEventListener('click', saveUserChanges);
       document.getElementById('confirmResetPassword').addEventListener('click', resetUserPassword);
 
-      // ---------------------------
-      // Load rows from "Profiles"
-      // ---------------------------
-      await loadProfiles();
+      // Load all auth users
+      await loadAuthUsers();
     }
 
     // ---------------------------
-    // Check Admin (Optional)
+    // Check if current user is admin
+    // (Optional, depends on your app logic)
     // ---------------------------
     async function checkAdmin() {
-      // If you don't need to check admin status, remove this entire function
-      const { data: { user }, error } = await supabase.auth.getUser();
-
-      // If there's no user or an error, prompt to log in
+      const { data: { user }, error } = await supabaseAdmin.auth.getUser();
       if (error || !user) {
         showAlert('You must be logged in to access this page.', 'danger');
-        setTimeout(() => {
-          window.location.href = 'login.html';
-        }, 2000);
+        setTimeout(() => (window.location.href = 'login.html'), 2000);
         return;
       }
-
-      // Example: check if user_metadata.role is 'admin'
+      // Suppose we store the role in user_metadata
       const role = user.user_metadata?.role || 'user';
       if (role !== 'admin') {
         showAlert('You do not have admin privileges.', 'danger');
-        setTimeout(() => {
-          window.location.href = 'login.html';
-        }, 2000);
+        setTimeout(() => (window.location.href = 'login.html'), 2000);
         return;
       }
-
-      // If user is admin, store them and display their email
       currentAdminUser = user;
       document.getElementById('adminInfo').textContent = `Logged in as: ${user.email}`;
     }
 
     // ---------------------------
-    // Load Profiles
+    // Load Auth Users
     // ---------------------------
-    async function loadProfiles() {
-  try {
-    // Fetch all rows from the Profiles table
-    const { data, error } = await supabase
-      .from('Profiles')
-      .select('*');
-      
-    if (error) throw error;
-    
-    // Handle empty results
-    if (!data || data.length === 0) {
-      document.getElementById('userList').innerHTML = `
-        <div class="alert alert-info">
-          No profiles found.
-        </div>
-      `;
-      return;
+    async function loadAuthUsers() {
+      try {
+        // Use the admin method to list users
+        const { data, error } = await supabaseAdmin.auth.admin.listUsers({
+          page: 1,
+          perPage: 50
+        });
+        if (error) throw error;
+
+        // data.users will be an array of user objects
+        allUsers = data.users || [];
+        if (!allUsers.length) {
+          document.getElementById('userList').innerHTML = `
+            <div class="alert alert-info">No users found in Auth.</div>
+          `;
+          return;
+        }
+        renderUserList(allUsers);
+      } catch (err) {
+        console.error('Failed to load auth users:', err);
+        document.getElementById('userList').innerHTML = `
+          <div class="alert alert-danger">
+            <h5><i class="bi bi-exclamation-triangle-fill"></i> Error retrieving auth users</h5>
+            <p>${err.message}</p>
+          </div>
+        `;
+      }
     }
-    
-    allUsers = data;
-    renderUserList(allUsers);
-  } catch (err) {
-    console.error('Failed to load profiles:', err);
-    document.getElementById('userList').innerHTML = `
-      <div class="alert alert-danger">
-        <h5><i class="bi bi-exclamation-triangle-fill"></i> Error retrieving profiles</h5>
-        <p>${err.message}</p>
-      </div>
-    `;
-  }
-} 
-
 
     // ---------------------------
-    // Render the Table
+    // Render Table
     // ---------------------------
     function renderUserList(users) {
-      if (!users || users.length === 0) {
+      if (!users || !users.length) {
         document.getElementById('userList').innerHTML = `
-          <div class="alert alert-info">No profiles found.</div>
+          <div class="alert alert-info">No users found.</div>
         `;
         return;
       }
@@ -378,41 +350,40 @@
         <table class="table table-striped table-hover">
           <thead class="table-dark">
             <tr>
-              <th>UUID</th>
+              <th>UID</th>
               <th>Email</th>
-              <th>Full Name</th>
-              <th>Phone</th>
+              <th>Created At</th>
+              <th>Last Sign In</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
       `;
 
-      users.forEach(user => {
+      users.forEach((u) => {
         html += `
           <tr>
-            <td>${user.uuid ?? ''}</td>
-            <td>${user.email ?? ''}</td>
-            <td>${user.full_name ?? ''}</td>
-            <td>${user.phone ?? ''}</td>
+            <td>${u.id}</td>
+            <td>${u.email ?? ''}</td>
+            <td>${u.created_at ? new Date(u.created_at).toLocaleString() : ''}</td>
+            <td>${u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : ''}</td>
             <td class="user-actions">
-              <!-- Example action buttons -->
               <button 
                 class="btn btn-sm btn-primary view-user" 
-                data-user-id="${user.uuid}"
+                data-user-id="${u.id}"
               >
                 <i class="bi bi-eye"></i> View
               </button>
               <button 
                 class="btn btn-sm btn-warning reset-password"
-                data-user-id="${user.uuid}" 
-                data-user-email="${user.email}"
+                data-user-id="${u.id}" 
+                data-user-email="${u.email}"
               >
                 <i class="bi bi-key"></i> Reset
               </button>
               <button 
                 class="btn btn-sm btn-danger delete-user" 
-                data-user-id="${user.uuid}"
+                data-user-id="${u.id}"
               >
                 <i class="bi bi-trash"></i> Delete
               </button>
@@ -424,17 +395,16 @@
       html += `</tbody></table>`;
       document.getElementById('userList').innerHTML = html;
 
-      // Attach event listeners to each action button (if used)
-      document.querySelectorAll('.view-user').forEach(btn => {
+      // Attach event listeners for the buttons
+      document.querySelectorAll('.view-user').forEach((btn) => {
         btn.addEventListener('click', () => viewUserDetails(btn.dataset.userId));
       });
-      document.querySelectorAll('.reset-password').forEach(btn => {
-        btn.addEventListener('click', () => showResetPasswordModal(
-          btn.dataset.userId, 
-          btn.dataset.userEmail
-        ));
+      document.querySelectorAll('.reset-password').forEach((btn) => {
+        btn.addEventListener('click', () =>
+          showResetPasswordModal(btn.dataset.userId, btn.dataset.userEmail)
+        );
       });
-      document.querySelectorAll('.delete-user').forEach(btn => {
+      document.querySelectorAll('.delete-user').forEach((btn) => {
         btn.addEventListener('click', () => deleteUser(btn.dataset.userId));
       });
     }
@@ -443,12 +413,12 @@
     // View User Details (Modal)
     // ---------------------------
     function viewUserDetails(userId) {
-      const user = allUsers.find(u => u.uuid === userId);
+      const user = allUsers.find((usr) => usr.id === userId);
       if (!user) return;
 
       const html = `
         <form id="userDetailForm">
-          <input type="hidden" id="userId" value="${user.uuid}">
+          <input type="hidden" id="userId" value="${user.id}">
           <div class="mb-3">
             <label for="userEmail" class="form-label">Email</label>
             <input 
@@ -460,23 +430,26 @@
             />
           </div>
           <div class="mb-3">
-            <label for="userFullName" class="form-label">Full Name</label>
+            <label for="userCreated" class="form-label">Created At</label>
             <input 
               type="text" 
               class="form-control" 
-              id="userFullName" 
-              value="${user.full_name ?? ''}"
+              id="userCreated" 
+              value="${user.created_at ? new Date(user.created_at).toLocaleString() : ''}"
+              readonly
             />
           </div>
           <div class="mb-3">
-            <label for="userPhone" class="form-label">Phone</label>
+            <label for="userLastSignIn" class="form-label">Last Sign In</label>
             <input 
               type="text" 
               class="form-control" 
-              id="userPhone" 
-              value="${user.phone ?? ''}"
+              id="userLastSignIn" 
+              value="${user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : ''}"
+              readonly
             />
           </div>
+          <!-- Add any custom user metadata fields if you store them -->
         </form>
       `;
       document.getElementById('userDetailContent').innerHTML = html;
@@ -484,33 +457,13 @@
     }
 
     // ---------------------------
-    // Save User Changes (Modal)
+    // Save User Changes (Example)
     // ---------------------------
     async function saveUserChanges() {
-      try {
-        const userId = document.getElementById('userId').value;
-        const newFullName = document.getElementById('userFullName').value;
-        const newPhone = document.getElementById('userPhone').value;
-
-        // Update the Profiles table
-        const { error } = await supabase
-          .from('Profiles') // or .from('profiles') if that is your table name
-          .update({
-            full_name: newFullName,
-            phone: newPhone
-          })
-          .eq('uuid', userId);
-
-        if (error) throw error;
-
-        // Reload the profiles from DB to see changes
-        await loadProfiles();
-        showAlert('Profile updated successfully!', 'success');
-        userDetailModal.hide();
-      } catch (err) {
-        console.error('Failed to update profile:', err);
-        showAlert(`Error updating profile: ${err.message}`, 'danger');
-      }
+      // This would be for updating user metadata or other fields, 
+      // which you can do with the admin API or your own server logic.
+      showAlert('No actual changes saved in this demo.', 'info');
+      userDetailModal.hide();
     }
 
     // ---------------------------
@@ -548,10 +501,12 @@
           return;
         }
 
-        // For demonstration, we do not actually reset any real password.
-        // In a real app, you would call a secure endpoint or a Supabase function.
+        // Real reset flow:
+        // const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, { password: newPassword });
+        // if (error) throw error;
+
         alertElement.innerHTML = `
-          <div class="alert alert-success">Password reset successfully (simulated)!</div>
+          <div class="alert alert-success">Password reset successfully (demo)!</div>
         `;
         setTimeout(() => {
           resetPasswordModal.hide();
@@ -565,26 +520,24 @@
     }
 
     // ---------------------------
-    // Delete User
+    // Delete User (Example)
     // ---------------------------
     async function deleteUser(userId) {
       if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
         return;
       }
       try {
-        const { error } = await supabase
-          .from('Profiles') // or .from('profiles') if that's your actual table
-          .delete()
-          .eq('uuid', userId);
-        if (error) throw error;
+        // Real admin delete:
+        // const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+        // if (error) throw error;
 
-        // Remove user locally and re-render
-        allUsers = allUsers.filter(u => u.uuid !== userId);
+        // For demonstration, we’ll just remove from the array:
+        allUsers = allUsers.filter((u) => u.id !== userId);
         renderUserList(allUsers);
-        showAlert('Profile deleted successfully!', 'success');
+        showAlert('User deleted successfully (demo)!', 'success');
       } catch (err) {
-        console.error('Failed to delete profile:', err);
-        showAlert(`Error deleting profile: ${err.message}`, 'danger');
+        console.error('Failed to delete user:', err);
+        showAlert(`Error deleting user: ${err.message}`, 'danger');
       }
     }
 
@@ -597,9 +550,7 @@
 
       // Example: filter by email substring
       if (searchTerm) {
-        filtered = filtered.filter(u => 
-          (u.email ?? '').toLowerCase().includes(searchTerm)
-        );
+        filtered = filtered.filter((u) => (u.email ?? '').toLowerCase().includes(searchTerm));
       }
 
       renderUserList(filtered);
@@ -608,8 +559,10 @@
     // ---------------------------
     // Logout
     // ---------------------------
-    function handleLogout() {
-      supabase.auth.signOut().then(() => {
+    function handleLogout(e) {
+      e.preventDefault();
+      // In your real flow, sign out from the admin or from your normal supabase client
+      supabaseAdmin.auth.signOut().then(() => {
         window.location.href = 'login.html';
       });
     }
