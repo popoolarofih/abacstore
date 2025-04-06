@@ -45,6 +45,21 @@
     </div>
   </div>
 
+  <!-- Order Details Modal -->
+  <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+         <div class="modal-header">
+           <h5 class="modal-title" id="orderDetailsModalLabel">Order Details</h5>
+           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body" id="orderDetailsContent">
+           <!-- Order product details will be injected here -->
+         </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Supabase & JS Code -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -71,22 +86,122 @@
         document.getElementById('orderList').innerHTML = `<p class="text-danger">Error: ${error.message}</p>`;
         return;
       }
-      let html = `<table class="table">
-        <thead><tr><th>Order ID</th><th>User ID</th><th>Date</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
+      let html = `<table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>User ID</th>
+            <th>Date</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>`;
       orders.forEach(o => {
-        html += `<tr>
+        html += `<tr data-id="${o.id}">
           <td>${o.id}</td>
           <td>${o.user_id}</td>
           <td>${new Date(o.created_at).toLocaleDateString()}</td>
-          <td>$${o.total}</td>
-          <td>${o.status}</td>
+          <td>#${o.total.toFixed(2)}</td>
           <td>
-            <button class="btn btn-sm btn-outline-primary">View Details</button>
+            <select class="form-select status-select" style="width: auto; display: inline-block;">
+              <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+              <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
+              <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+              <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+              <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+            </select>
+            <button class="btn btn-sm btn-outline-success update-status-btn">Update</button>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary view-details-btn">View Details</button>
           </td>
         </tr>`;
       });
       html += `</tbody></table>`;
       document.getElementById('orderList').innerHTML = html;
+      attachOrderEventListeners();
+    }
+
+    // Attach event listeners for updating status and viewing details
+    function attachOrderEventListeners() {
+      document.querySelectorAll('.update-status-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const row = e.target.closest('tr');
+          const orderId = row.getAttribute('data-id');
+          const newStatus = row.querySelector('.status-select').value;
+          await updateOrderStatus(orderId, newStatus);
+        });
+      });
+      document.querySelectorAll('.view-details-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const row = e.target.closest('tr');
+          const orderId = row.getAttribute('data-id');
+          viewOrderDetails(orderId);
+        });
+      });
+    }
+
+    // Update the order status in the database
+    async function updateOrderStatus(orderId, newStatus) {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+      if (error) {
+        alert(`Error updating status: ${error.message}`);
+      } else {
+        alert('Order status updated successfully.');
+        loadOrders();
+      }
+    }
+
+    // View detailed product info for an order
+    async function viewOrderDetails(orderId) {
+      // Assuming you have an 'order_items' table with order_id, product_name, product_price, product_image_url, quantity
+      const { data: orderItems, error } = await supabase
+        .from('order_items')
+        .select('*')
+        .eq('order_id', orderId);
+      if (error) {
+        document.getElementById('orderDetailsContent').innerHTML = `<p class="text-danger">Error loading order details: ${error.message}</p>`;
+        return;
+      }
+      if (!orderItems || orderItems.length === 0) {
+        document.getElementById('orderDetailsContent').innerHTML = `<p>No product details found for this order.</p>`;
+      } else {
+        let detailsHtml = `<table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>`;
+        let total = 0;
+        orderItems.forEach(item => {
+          const subtotal = item.product_price * item.quantity;
+          total += subtotal;
+          detailsHtml += `<tr>
+            <td>${item.product_name}</td>
+            <td>#${item.product_price.toFixed(2)}</td>
+            <td>${item.quantity}</td>
+            <td>#${subtotal.toFixed(2)}</td>
+          </tr>`;
+        });
+        detailsHtml += `<tr>
+          <td colspan="3" class="text-end fw-bold">Total</td>
+          <td class="fw-bold">#${total.toFixed(2)}</td>
+        </tr>`;
+        detailsHtml += `</tbody></table>`;
+        document.getElementById('orderDetailsContent').innerHTML = detailsHtml;
+      }
+      // Show the modal using Bootstrap's Modal API
+      const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+      modal.show();
     }
 
     checkAdmin();

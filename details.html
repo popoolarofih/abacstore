@@ -146,83 +146,117 @@
       // Add event listener to the Add to Cart button
       document.getElementById('addToCartBtn').addEventListener('click', () => addToCart(product));
     }
-
-    // Add to cart function
-    async function addToCart(product) {
-      try {
-        // Check if user is logged in
-        const session = await getSession();
-        
-        if (!session) {
-          // If user is not logged in, show message with login link
-          document.getElementById('cartMessage').innerHTML = `
-            <div class="alert alert-warning">
-              Please <a href="login.html">login</a> to add items to your cart.
-            </div>
-          `;
-          return;
-        }
-        
-        // Get quantity
-        const quantity = parseInt(document.getElementById('quantity').value);
-        if (isNaN(quantity) || quantity < 1) {
-          document.getElementById('cartMessage').innerHTML = `
-            <div class="alert alert-danger">
-              Please select a valid quantity.
-            </div>
-          `;
-          return;
-        }
-        
-        // For debugging purposes - display the user ID we're trying to use
-        console.log("Current user ID:", session.user.id);
-        
-        // Create a temporary cart item for the guest user if not logged in
-        // or insert into the database if logged in
-        const { data, error: insertError } = await supabase
-          .from('cart')
-          .insert({
-            user_id: session.user.id,
-            product_name: product.name,
-            product_price: product.price,
-            product_image_url: product.image_url,
-            quantity: quantity
-          });
-        
-        if (insertError) {
-          console.error('Error adding to cart:', insertError);
-          
-          // Display a more specific error message
-          if (insertError.code === '23503') { // Foreign key violation
-            document.getElementById('cartMessage').innerHTML = `
-              <div class="alert alert-danger">
-                Session error. Please try logging out and back in.
-              </div>
-            `;
-          } else {
-            document.getElementById('cartMessage').innerHTML = `
-              <div class="alert alert-danger">
-                Error adding item to cart: ${insertError.message}
-              </div>
-            `;
-          }
-        } else {
-          document.getElementById('cartMessage').innerHTML = `
-            <div class="alert alert-success">
-              Item added to cart! <a href="cart.html">View Cart</a>
-            </div>
-          `;
-        }
-      } catch (error) {
-        console.error('Unexpected error:', error);
+  // Add to cart function
+  // Add to cart function
+async function addToCart(product) {
+  try {
+    // Check if user is logged in
+    const session = await getSession();
+    
+    if (!session) {
+      // If user is not logged in, show message with login link
+      document.getElementById('cartMessage').innerHTML = `
+        <div class="alert alert-warning">
+          Please <a href="login.html">login</a> to add items to your cart.
+        </div>
+      `;
+      return;
+    }
+    
+    // Get quantity
+    const quantity = parseInt(document.getElementById('quantity').value);
+    if (isNaN(quantity) || quantity < 1) {
+      document.getElementById('cartMessage').innerHTML = `
+        <div class="alert alert-danger">
+          Please select a valid quantity.
+        </div>
+      `;
+      return;
+    }
+    
+    // Display debug information
+    console.log("Current user ID:", session.user.id);
+    
+    // Check if the product already exists in the user's cart
+    const { data: existingItems, error: checkError } = await supabase
+      .from('cart')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .eq('product_name', product.name);
+    
+    if (checkError) {
+      console.error('Error checking cart:', checkError);
+      document.getElementById('cartMessage').innerHTML = `
+        <div class="alert alert-danger">
+          Error checking cart: ${checkError.message}
+        </div>
+      `;
+      return;
+    }
+    
+    let result;
+    // If product already exists in cart, update quantity
+    if (existingItems && existingItems.length > 0) {
+      const existingItem = existingItems[0];
+      const newQuantity = existingItem.quantity + quantity;
+      result = await supabase
+        .from('cart')
+        .update({ quantity: newQuantity })
+        .eq('id', existingItem.id);
+    } else {
+      // Otherwise, insert new cart item
+      result = await supabase
+        .from('cart')
+        .insert({
+          user_id: session.user.id,
+          product_name: product.name,
+          product_price: product.price,
+          product_image_url: product.image_url,
+          quantity: quantity
+        });
+    }
+    
+    const { error: insertError } = result;
+    
+    if (insertError) {
+      console.error('Error adding to cart:', insertError);
+      
+      if (insertError.code === '23503') { // Foreign key violation
         document.getElementById('cartMessage').innerHTML = `
           <div class="alert alert-danger">
-            An unexpected error occurred. Please try again.
+            <p>User profile not initialized. Please complete registration process first.</p>
+            <p>Error details: ${insertError.details || insertError.message}</p>
+          </div>
+        `;
+      } else {
+        document.getElementById('cartMessage').innerHTML = `
+          <div class="alert alert-danger">
+            <p>Error adding item to cart: ${insertError.message}</p>
+            <p><strong>Technical details:</strong> ${JSON.stringify({
+              code: insertError.code,
+              details: insertError.details
+            })}</p>
           </div>
         `;
       }
+    } else {
+      document.getElementById('cartMessage').innerHTML = `
+        <div class="alert alert-success">
+          Item added to cart! <a href="cart.html">View Cart</a>
+        </div>
+      `;
     }
-    
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    document.getElementById('cartMessage').innerHTML = `
+      <div class="alert alert-danger">
+        <p>An unexpected error occurred. Please try again.</p>
+        <p><strong>Technical details:</strong> ${error.message}</p>
+      </div>
+    `;
+  }
+}
+
     // Load product details and reviews on page load
     window.addEventListener('DOMContentLoaded', async () => {
       // Pre-load session
